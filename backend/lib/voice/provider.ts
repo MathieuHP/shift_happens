@@ -1,6 +1,7 @@
 export type PlaceCallRequest = {
   idempotencyKey: string;
   toNumber: string;
+  dynamicVariables?: Record<string, string>;
 };
 
 export type PlaceCallResult = {
@@ -17,7 +18,11 @@ export interface VoiceProvider {
 export class SimulatedVoiceProvider implements VoiceProvider {
   async placeCall(request: PlaceCallRequest): Promise<PlaceCallResult> {
     console.info(`[SIMULÉ] Voice call requested (key=${request.idempotencyKey})`);
-    return { mode: "simulated", conversationId: null, callSid: null };
+    return {
+      mode: "simulated",
+      conversationId: `simulated-${request.idempotencyKey}`,
+      callSid: null,
+    };
   }
 }
 
@@ -89,6 +94,9 @@ export class ElevenLabsVoiceProvider implements VoiceProvider {
           agent_phone_number_id: this.agentPhoneNumberId,
           to_number: request.toNumber,
           call_recording_enabled: false,
+          ...(request.dynamicVariables
+            ? { conversation_initiation_client_data: { dynamic_variables: request.dynamicVariables } }
+            : {}),
         }),
         signal: AbortSignal.timeout(10_000),
       },

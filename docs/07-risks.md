@@ -15,11 +15,11 @@
 | Sensitive data stored | No reason asked; no raw transcript/audio; short note only if consented. Confirm provider-side retention in spike. |
 | ElevenLabs/Twilio outage or misrouting | Test calls before demo; keep case; alert manager; manual contact action; demo inbox fallback. |
 | Call linked to the wrong shift/employee/candidate | Correlate `CallSid`, `conversation_id`, purpose, recipient, and server-side context; reject mismatches. |
-| Outbound retry duplicates a call | Persist `CallAttempt` + idempotency key first; on timeout reconcile by returned IDs before retrying; one active attempt per case. |
+| Outbound retry duplicates a call | Persist `CallAttempt` + unique key first; allow one `calling` row per case; never retry a provider request that timed out before IDs return. Leave that case active for manual reconciliation. |
 | Outbound contact breaches consent/hours | Check consent and contact window before dialing; test numbers only. |
 | Stripe replay / duplicate / spoof | Signature check, unique event ID, idempotent handler, reconcile authoritative state. |
 | Wrong entitlement | Derive from persisted subscription; never from redirect; binary rule; billing never changes cases. |
-| Provider webhook spoof | Verify signatures/auth where supported; dedupe; unsupported verification stays mocked and labeled until resolved. |
+| Provider webhook spoof | Verify ElevenLabs HMAC signatures and timestamps; update an attempt only while it is still `calling`, making callback replays harmless. |
 | Automatic assignment surprises a manager | Show assignment mode prominently, make it manager-configurable, audit changes, and hold acceptance in manual mode. |
 | Unfair automated decisions | No ranking by attendance, discipline, protected traits or inferred reliability. |
 | Legal differences by region | No compliance claim; production needs local labor and privacy review. Recording off. |

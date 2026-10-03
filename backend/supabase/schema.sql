@@ -50,9 +50,12 @@ create table if not exists shifts (
   skill_required text not null,
   starts_at timestamptz not null,
   ends_at timestamptz not null,
+  hourly_rate numeric(8,2),
   status text not null default 'scheduled' check (status in ('scheduled', 'vacant', 'covered', 'cancelled')),
   created_at timestamptz not null default now()
 );
+
+alter table shifts add column if not exists hourly_rate numeric(8,2);
 
 create table if not exists absence_cases (
   id uuid primary key default gen_random_uuid(),
@@ -268,6 +271,9 @@ begin
   return 'accepted';
 end;
 $$;
+
+revoke all on function respond_to_voice_offer(uuid, text) from public;
+grant execute on function respond_to_voice_offer(uuid, text) to service_role;
 
 do $$
 begin

@@ -26,6 +26,7 @@ function shift(input: Partial<Shift> & Pick<Shift, "id">): Shift {
     skill_required: "salle",
     starts_at: "2026-10-04T08:00:00.000Z",
     ends_at: "2026-10-04T16:00:00.000Z",
+    hourly_rate: null,
     status: "scheduled",
     ...input,
   };

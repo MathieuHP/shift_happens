@@ -1,9 +1,10 @@
 import { optionalEnv } from "@/lib/env";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { insertEvent } from "@/lib/events/insertEvent";
-import type { AbsenceCase, CallAttempt, Employee, RestaurantAccount } from "@/lib/types";
+import type { AbsenceCase, CallAttempt, Employee, RestaurantAccount, Shift } from "@/lib/types";
 import { checkContactPolicy } from "@/lib/voice/contactPolicy";
 import { getVoiceProvider, getVoiceRecipient } from "@/lib/voice/getProvider";
+import { buildOfferDynamicVariables } from "@/lib/voice/offerVariables";
 
 export async function callNextCandidate(absenceCaseId: string) {
   const supabase = createSupabaseServiceClient();
@@ -33,9 +34,9 @@ export async function callNextCandidate(absenceCaseId: string) {
 
   const { data: restaurant, error: restaurantError } = await supabase
     .from("restaurant_accounts")
-    .select("timezone")
+    .select("name, timezone, manager_confirmation_required")
     .eq("id", absenceCase.restaurant_account_id)
-    .single<Pick<RestaurantAccount, "timezone">>();
+    .single<Pick<RestaurantAccount, "name" | "timezone" | "manager_confirmation_required">>();
   if (restaurantError) throw restaurantError;
 
   let candidate: Employee | null = null;
@@ -84,9 +85,20 @@ export async function callNextCandidate(absenceCaseId: string) {
     return { status: "unresolved", attempted: false };
   }
 
+  const { data: shift, error: shiftError } = await supabase
+    .from("shifts")
+    .select("role, starts_at, ends_at, hourly_rate")
+    .eq("id", absenceCase.shift_id)
+    .single<Pick<Shift, "role" | "starts_at" | "ends_at" | "hourly_rate">>();
+  if (shiftError) throw shiftError;
+  if (shift.hourly_rate === null || !Number.isFinite(Number(shift.hourly_rate))) {
+    throw new Error("Cannot make a voice offer without the shift hourly rate");
+  }
+
   const provider = getVoiceProvider();
   await provider.prepare?.();
   const idempotencyKey = `${absenceCase.id}:${candidate.id}`;
+  const responseDeadline = new Date(Date.now() + Number(optionalEnv("CALL_TIMEOUT_SECONDS") ?? "45") * 1000);
   const { data: attempt, error: attemptError } = await supabase
     .from("call_attempts")
     .insert({
@@ -118,6 +130,17 @@ export async function callNextCandidate(absenceCaseId: string) {
   const call = await provider.placeCall({
     idempotencyKey,
     toNumber: getVoiceRecipient(candidate.phone),
+    dynamicVariables: buildOfferDynamicVariables({
+      restaurantName: restaurant.name,
+      employeeName: candidate.name,
+      role: shift.role,
+      startsAt: shift.starts_at,
+      endsAt: shift.ends_at,
+      hourlyRate: Number(shift.hourly_rate),
+      responseDeadline,
+      timeZone: restaurant.timezone,
+      managerApprovalRequired: restaurant.manager_confirmation_required,
+    }),
   });
 
   const { error: identifiersError } = await supabase
@@ -128,6 +151,18 @@ export async function callNextCandidate(absenceCaseId: string) {
     })
     .eq("id", attempt.id);
   if (identifiersError) throw identifiersError;
+
+  await insertEvent(supabase, {
+    absenceCaseId,
+    type: "call_identifiers_saved",
+    message: `[${call.mode === "simulated" ? "SIMULÉ" : "LIVE"}] Voice provider returned call identifiers.`,
+    payload: {
+      attemptId: attempt.id,
+      conversationId: call.conversationId,
+      callSid: call.callSid,
+      mode: call.mode,
+    },
+  });
 
   return {
     status: "calling",

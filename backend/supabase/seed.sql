@@ -13,7 +13,7 @@ insert into employees (id, restaurant_account_id, name, phone, role, skills, act
   ('00000000-0000-0000-0000-000000000104', '00000000-0000-0000-0000-000000000001', 'Maya Chen', '+15550001004', 'cuisine', array['cuisine', 'caisse'], true, 30, now()),
   ('00000000-0000-0000-0000-000000000105', '00000000-0000-0000-0000-000000000001', 'Nina Patel', '+15550001005', 'salle', array['salle', 'caisse'], true, 40, now());
 
-insert into shifts (id, restaurant_account_id, employee_id, role, skill_required, starts_at, ends_at, status) values
+insert into shifts (id, restaurant_account_id, employee_id, role, skill_required, starts_at, ends_at, hourly_rate, status) values
   (
     '00000000-0000-0000-0000-000000000201',
     '00000000-0000-0000-0000-000000000001',
@@ -22,6 +22,7 @@ insert into shifts (id, restaurant_account_id, employee_id, role, skill_required
     'salle',
     date_trunc('day', now()) + interval '1 day' + interval '8 hours',
     date_trunc('day', now()) + interval '1 day' + interval '16 hours',
+    16.00,
     'scheduled'
   ),
   (
@@ -32,5 +33,6 @@ insert into shifts (id, restaurant_account_id, employee_id, role, skill_required
     'cuisine',
     date_trunc('day', now()) + interval '1 day' + interval '8 hours',
     date_trunc('day', now()) + interval '1 day' + interval '14 hours',
+    16.00,
     'scheduled'
   );

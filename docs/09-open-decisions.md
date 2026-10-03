@@ -36,7 +36,7 @@ Docs 04 (workflows) and 05 (architecture) still describe voice intake and calls:
 | QR signing and venue scanner | F5 | Employee/shift binding, signing key, expiry, single-use behavior, wrong-employee rejection, scanner identity | Valid scan records check-in and invalid/replayed scans are rejected |
 | Attendance scheduler | F5 | Durable `T−10` check-in opening, `T−5` recovery trigger, retry/replay behavior, timezone handling | One recovery case starts at the correct time, else labeled fixture |
 | ElevenLabs outbound attendance call | F5 | Agent ID, caller ID, test-number restrictions, response intents (`on_my_way`, `absent`, `unclear`), status callbacks, `call_recording_enabled=false` honored | One attendance call completes, else mock voice |
-| ElevenLabs outbound replacement offer | F5 | `agent_phone_number_id`, recipient binding, offer context, timeout, callback authentication, test numbers | One replacement offer completes, else demo inbox |
+| ElevenLabs outbound replacement offer | F5 | `agent_phone_number_id` lookup, recipient binding, offer context, timeout, callback authentication, test numbers, recording/transcript retention settings, complete 3-candidate sequence | Still unverified against the live ElevenLabs/Twilio account; current branch has a simulated default and an optional live adapter. Configure the agent/tool/webhook and run a test-number call before claiming live readiness. |
 | Stripe | F6 | Test account, price ID, Checkout, webhook forwarding + signature verification, Customer Portal | Checkout + signed webhook work, else signed fixture |
 
 ## Decisions (current default in bold)

@@ -11,8 +11,10 @@ A `Case` and its `Offer`s have **separate** state machines. Attendance recovery 
 Terminal/side states: `rejected`, `cancelled`, `no_candidate` (list exhausted or empty; manager is alerted), `expired` (shift started with no fill). `needs_review` covers invalid attendance evidence, unclear employee response, or any case requiring a human look. There is no separate `needs_manager_action`.
 
 ### Offer
-`queued → calling → accepted | declined | no_answer | expired | failed → closed`
-One live offer (`calling`) per case at a time. `accepted` is reachable once per case; confirming one offer sets all others `closed`.
+`queued → calling → accepted | declined | no_answer | failed | completed → closed`
+One live offer (`calling`) per case at a time. A unique partial index enforces this. `accepted` is reachable once per case; accepting one offer closes remaining queued/calling attempts.
+
+For the current Supabase implementation, manager confirmation is represented by `absence_cases.accepted_pending_manager`; automatic assignment moves the shift to `covered` and the case to `resolved` in the `respond_to_voice_offer` transaction.
 
 ### TimeOffRequest
 `pending` only in the MVP.
@@ -34,11 +36,11 @@ No LLM runs between the agent and the domain. Natural-language understanding is 
 
 ## Replacement outreach (F3/F5)
 1. Server computes candidates using F2 reasons and the configured contact policy.
-2. Server queues offers in deterministic order. For the next offer it checks consent and contact window, then dispatches: demo inbox or one outbound ElevenLabs/Twilio call.
+2. Server uses `candidate_ids` in deterministic order. For each next candidate it checks `contact_consent_at` and the restaurant-local contact window; skipped candidates are journaled. It persists a `CallAttempt` with a unique case/candidate idempotency key before dispatching through `VoiceProvider`.
 3. Offer wording: “[Restaurant] has an open [role] shift on [date], [start] to [end]. Can you take it?” The response explains whether acceptance is held for manager confirmation or assigned automatically. Response deadline default 45 s for a call (configurable; longer for inbox).
-4. Response recorded idempotently. Decline/no answer/expiry → next candidate. First acceptance → case `accepted_pending_manager`, remaining offers `closed`.
+4. The agent can call only `/api/voice/respond`, authenticated with `x-voice-secret`; the backend resolves `x-conversation-id` to the persisted attempt. A SQL transaction records yes/no idempotently. Decline, signed provider call-initiation failure, or the authenticated timeout sweep → next candidate. First acceptance → case `accepted_pending_manager` when configured, otherwise assignment and case resolution occur atomically.
 5. In manual mode, the manager confirms; one transaction assigns the shift, sets `filled`, closes offers, and audits. In automatic mode, the acceptance transaction performs the same assignment without a second manager action.
-6. If the list is exhausted → `no_candidate` + manager alert.
+6. If the list is exhausted → `unresolved` + manager alert/event in the current schema.
 
 Sequential is a deliberate MVP choice (avoids double acceptance and keeps the manager’s approved order). Cost: a long list takes minutes. Parallel offers to the top N are a later option with single-winner semantics.
 

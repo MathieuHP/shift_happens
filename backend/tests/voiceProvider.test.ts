@@ -31,7 +31,7 @@ describe("VoiceProvider", () => {
 
     await expect(
       provider.placeCall({ idempotencyKey: "demo-1", toNumber: "+15550000000" }),
-    ).resolves.toEqual({ mode: "simulated", conversationId: null, callSid: null });
+    ).resolves.toEqual({ mode: "simulated", conversationId: "simulated-demo-1", callSid: null });
     expect(info).toHaveBeenCalledWith(expect.stringContaining("[SIMULÉ]"));
     info.mockRestore();
   });
@@ -51,7 +51,11 @@ describe("VoiceProvider", () => {
     });
 
     await expect(
-      provider.placeCall({ idempotencyKey: "key-1", toNumber: "+15550000000" }),
+      provider.placeCall({
+        idempotencyKey: "key-1",
+        toNumber: "+15550000000",
+        dynamicVariables: { employee_first_name: "Sarah" },
+      }),
     ).resolves.toEqual({ mode: "live", conversationId: "conv-1", callSid: "CA1" });
     expect(fetchImpl).toHaveBeenCalledWith(
       "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
@@ -63,6 +67,9 @@ describe("VoiceProvider", () => {
           agent_phone_number_id: "phone-1",
           to_number: "+15550000000",
           call_recording_enabled: false,
+          conversation_initiation_client_data: {
+            dynamic_variables: { employee_first_name: "Sarah" },
+          },
         }),
       }),
     );

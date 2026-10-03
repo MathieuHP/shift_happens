@@ -24,6 +24,7 @@ export type EventType =
   | "shift_vacant"
   | "candidate_list_created"
   | "call_started"
+  | "call_identifiers_saved"
   | "call_declined"
   | "call_no_answer"
   | "call_failed"
@@ -53,6 +54,7 @@ export type Shift = {
   skill_required: string;
   starts_at: string;
   ends_at: string;
+  hourly_rate: number | null;
   status: ShiftStatus;
   replacement_for_employee_id?: string | null;
   hourly_rate?: number;

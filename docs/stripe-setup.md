@@ -24,7 +24,7 @@ npm run backend:dev
 stripe listen --forward-to localhost:3000/api/billing/webhook   # laisser tourner
 ```
 Puis dans l'app : Gérant → Paiements → **S'abonner** → carte de test `4242 4242 4242 4242`. Le statut passe à « actif » **uniquement** quand le webhook arrive (le retour de la page Stripe ne suffit pas).
-Sans navigateur : créer un client et un abonnement avec `metadata[restaurant_id]=chez-odile` via la CLI ; le webhook met le statut à jour.
+Sans navigateur : créer un client et un abonnement avec `metadata[restaurant_id]=coli-brasserie` via la CLI ; le webhook met le statut à jour.
 
 Routes : `POST /api/billing/checkout`, `GET /api/billing/status`, `POST /api/billing/portal`, `POST /api/billing/webhook`.
 Événements gérés : `checkout.session.completed`, `customer.subscription.created|updated|deleted`, `transfer.reversed`. Les événements rejoués sont ignorés, et l'état de l'abonnement est relu chez Stripe (source de vérité) à chaque événement.

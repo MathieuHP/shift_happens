@@ -71,7 +71,7 @@ describe("syncPayables", () => {
       amount_cents: 8000,
       currency: "eur",
       status: "to_validate",
-      label: "Bar · Chez Odile",
+      label: "Bar · Coli Brasserie",
     });
   });
 

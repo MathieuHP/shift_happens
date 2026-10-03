@@ -5,7 +5,7 @@ import { localCalendarDay, zonedTimeToIso } from "./time";
 import type { AppState } from "./types";
 
 const GLOBAL_KEY = "__shiftsaver_inapp_state__";
-const RESTAURANT_ID = "chez-odile";
+const RESTAURANT_ID = "coli-brasserie";
 
 // Numéro réel d'un participant de la démo, lu dans backend/.env.local (jamais écrit dans le dépôt).
 // Format international obligatoire (ex. +32470123456). Sinon : faux numéro, aucun appel possible.
@@ -103,11 +103,11 @@ function tonightShifts(now: Date): Shift[] {
   return shifts;
 }
 
-// Données de démo "Chez Odile". Les horaires sont ceux du restaurant (Europe/Brussels) et relatifs à `now`
+// Données de démo "Coli Brasserie". Les horaires sont ceux du restaurant (Europe/Brussels) et relatifs à `now`
 // (ce soir, demain et après-demain) pour que les shifts soient toujours dans le futur.
 export function createSeedState(now: Date): AppState {
   return {
-    restaurant_name: "Chez Odile",
+    restaurant_name: "Coli Brasserie",
     settings: { manager_approval_required: false },
     employees: [
       employee("ines", "Inès", "salle", ["salle", "bar"], 10, now, 1),

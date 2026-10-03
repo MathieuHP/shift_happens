@@ -216,7 +216,7 @@ describe("lists", () => {
 
     const [card] = listOffersForEmployee(state, "mathieu", now);
 
-    expect(card).toMatchObject({ role: "Bar", restaurant: "Chez Odile", start: "18:00", end: "23:00", hourly_rate: 16, urgent: false });
+    expect(card).toMatchObject({ role: "Bar", restaurant: "Coli Brasserie", start: "18:00", end: "23:00", hourly_rate: 16, urgent: false });
     expect(listOffersForEmployee(state, "tom", now)).toEqual([]);
   });
 

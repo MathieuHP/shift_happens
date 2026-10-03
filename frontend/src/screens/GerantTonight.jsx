@@ -32,7 +32,7 @@ export default function GerantTonight() {
     <div className="flex flex-col gap-4">
       <div>
         <h1 className="font-titre text-2xl font-bold">Ce soir</h1>
-        <p className="text-secondaire capitalize">{formatDayLong(tonight.date)} · Chez Odile</p>
+        <p className="text-secondaire capitalize">{formatDayLong(tonight.date)} · Coli Brasserie</p>
       </div>
 
       {/* Absences et retards signalés par l'équipe (données du backend) */}

@@ -16,7 +16,7 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col justify-center px-4">
-      <h1 className="font-titre text-4xl font-bold">Chez Odile</h1>
+      <h1 className="font-titre text-4xl font-bold">Coli Brasserie</h1>
       <p className="mt-2 mb-8 text-secondaire">Qui êtes-vous ?</p>
 
       <div className="flex flex-col gap-3">

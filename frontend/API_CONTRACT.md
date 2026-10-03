@@ -120,7 +120,7 @@ Sans corps. `approve` affecte le remplaçant qui a accepté (`resolved`). `rejec
 ### `GET /api/shifts/open?employee_id=mathieu` — les offres reçues (écran « Shifts ouverts »)
 Le champ `id` est l'identifiant de l'**offre**. Une offre reste valable jusqu'au début du shift.
 ```json
-[ { "id": "6217…", "role": "Bar", "restaurant": "Chez Odile", "date": "2026-10-04",
+[ { "id": "6217…", "role": "Bar", "restaurant": "Coli Brasserie", "date": "2026-10-04",
     "start": "18:00", "end": "23:00", "hourly_rate": 16, "urgent": false } ]
 ```
 `urgent` = le shift commence dans moins de 24 h. Le front calcule la durée et le total.
@@ -225,13 +225,13 @@ Voir `docs/stripe-setup.md` pour la mise en place. Toutes ces routes sont dans `
 - `GET /api/payables`
 ```json
 { "items": [ { "id": "…", "shift_id": "shift-5", "employee_id": "mathieu", "employee_name": "Mathieu",
-  "label": "Bar · Chez Odile", "date": "2026-10-04", "hours": 5, "hourly_rate": 16,
+  "label": "Bar · Coli Brasserie", "date": "2026-10-04", "hours": 5, "hourly_rate": 16,
   "amount": 80, "amount_cents": 8000, "currency": "eur", "status": "to_validate",
   "stripe_transfer_id": null, "error": null, "has_payout_account": false } ],
   "to_validate_total": 80 }
 ```
 - `POST /api/payables/pay-all` → `{ "results": [ { "id": "…", "employee_name": "Mathieu", "ok": false, "error": "…" } ], "paid": 0, "failed": 1 }`. Une ligne en échec n'empêche pas les autres ; un virement n'est jamais créé deux fois.
 - `POST /api/payables/{id}/pay` → `{ "id": "…", "status": "paid", "stripe_transfer_id": "tr_…" }`. Erreurs : `payout_account_missing`, `payout_account_not_ready` (409), `shift_not_finished` (409, sauf `ALLOW_EARLY_PAYOUT=true`), `transfer_failed` (502).
-- `GET /api/earnings?employee_id=mathieu` → `{ "week_total": 80, "last_payment": { "amount": 80, "date": "2026-10-04" } | null, "items": [ { "id": "…", "type": "shift", "label": "Bar · Chez Odile", "date": "2026-10-04", "amount": 80, "status": "paid|upcoming" } ] }`
+- `GET /api/earnings?employee_id=mathieu` → `{ "week_total": 80, "last_payment": { "amount": 80, "date": "2026-10-04" } | null, "items": [ { "id": "…", "type": "shift", "label": "Bar · Coli Brasserie", "date": "2026-10-04", "amount": 80, "status": "paid|upcoming" } ] }`
 - `GET /api/payout-account?employee_id=mathieu` → `{ "status": "none|pending|ready" }`
 - `POST /api/payout-account` `{ "employee_id": "mathieu", "email": "mathieu@example.com" }` → `{ "url": "https://connect.stripe.com/…" }` (inscription hébergée par Stripe). Erreur `sandbox_required` (501) tant que les clés ne sont pas celles d'un sandbox Stripe.

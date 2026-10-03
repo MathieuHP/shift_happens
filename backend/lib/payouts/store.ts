@@ -11,7 +11,7 @@ export type Payable = {
   shift_id: string;
   employee_id: string;
   employee_name: string;
-  label: string; // ex. "Bar · Chez Odile"
+  label: string; // ex. "Bar · Coli Brasserie"
   date: string; // AAAA-MM-JJ
   hours: number;
   hourly_rate: number;

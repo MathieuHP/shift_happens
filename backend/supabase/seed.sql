@@ -1,7 +1,7 @@
 truncate table audit_events, provider_events, voice_interactions, events, call_attempts, absence_cases, shifts, subscriptions, employees, restaurant_accounts restart identity cascade;
 
 insert into restaurant_accounts (id, name, timezone, autopilot_enabled, manager_confirmation_required, demo_seeded) values
-  ('00000000-0000-0000-0000-000000000001', 'ShiftSaver Demo Bistro', 'Europe/Brussels', true, false, true);
+  ('00000000-0000-0000-0000-000000000001', 'Coli Brasserie', 'Europe/Brussels', true, false, true);
 
 insert into subscriptions (id, restaurant_account_id, subscription_status, stripe_customer_id, stripe_subscription_id, stripe_price_id) values
   ('00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000001', 'active', 'cus_demo_shiftsaver', 'sub_demo_shiftsaver', 'price_demo_shiftsaver');

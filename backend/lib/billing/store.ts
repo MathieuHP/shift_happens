@@ -1,7 +1,7 @@
 import { readStore, writeStore } from "@/lib/store/jsonStore";
 import type { SubscriptionStatus } from "@/lib/types";
 
-export const RESTAURANT_ID = "chez-odile";
+export const RESTAURANT_ID = "coli-brasserie";
 
 export type BillingState = {
   restaurant_id: string;

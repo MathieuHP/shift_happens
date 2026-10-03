@@ -15,7 +15,7 @@ export async function callNextCandidate(absenceCaseId: string) {
     .single<AbsenceCase>();
   if (caseError) throw caseError;
 
-  if (absenceCase.status === "resolved" || absenceCase.status === "unresolved") {
+  if (["resolved", "unresolved", "accepted_pending_manager"].includes(absenceCase.status)) {
     return { status: absenceCase.status, attempted: false };
   }
 
@@ -85,6 +85,7 @@ export async function callNextCandidate(absenceCaseId: string) {
   }
 
   const provider = getVoiceProvider();
+  await provider.prepare?.();
   const idempotencyKey = `${absenceCase.id}:${candidate.id}`;
   const { data: attempt, error: attemptError } = await supabase
     .from("call_attempts")

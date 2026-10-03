@@ -1,60 +1,65 @@
 import { callNextCandidate } from "@/lib/cascade/callNextCandidate";
+import { requireEnv } from "@/lib/env";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
-import { insertEvent } from "@/lib/events/insertEvent";
-import type { CallAttempt, Employee } from "@/lib/types";
-
-const NO_ANSWER_STATUSES = new Set(["busy", "failed", "no-answer", "canceled"]);
+import {
+  handleElevenLabsCallEvent,
+  verifyElevenLabsSignature,
+  type ProviderCallEvent,
+} from "@/lib/voice/providerEvents";
+import type { CallAttemptStatus } from "@/lib/types";
 
 export async function POST(request: Request) {
-  const url = new URL(request.url);
-  const attemptId = url.searchParams.get("attemptId");
-
-  if (!attemptId) {
-    return new Response("Missing attemptId", { status: 400 });
+  const rawBody = await request.text();
+  if (!verifyElevenLabsSignature({
+    rawBody,
+    signature: request.headers.get("elevenlabs-signature"),
+    secret: requireEnv("ELEVENLABS_WEBHOOK_SECRET"),
+  })) {
+    return Response.json({ error: "invalid_signature" }, { status: 401 });
   }
 
-  const formData = await request.formData();
-  const callStatus = formData.get("CallStatus")?.toString() ?? "unknown";
-
-  if (!NO_ANSWER_STATUSES.has(callStatus)) {
-    return Response.json({ ok: true, ignored: callStatus });
+  let event: unknown;
+  try {
+    event = JSON.parse(rawBody);
+  } catch {
+    return Response.json({ error: "invalid_json" }, { status: 400 });
+  }
+  if (!event || typeof event !== "object" || !("type" in event) || !("data" in event)) {
+    return Response.json({ error: "invalid_event" }, { status: 400 });
   }
 
-  const supabase = createSupabaseServiceClient();
-  const { data: attempt, error: attemptError } = await supabase
-    .from("call_attempts")
-    .select("*")
-    .eq("id", attemptId)
-    .single<CallAttempt>();
-
-  if (attemptError || attempt.status === "accepted" || attempt.status === "declined") {
-    return Response.json({ ok: true, ignored: callStatus });
+  try {
+    const dependencies = {
+      async findAttemptByConversationId(conversationId: string) {
+        const supabase = createSupabaseServiceClient();
+        const { data, error } = await supabase
+          .from("call_attempts")
+          .select("id, absence_case_id")
+          .eq("voice_conversation_id", conversationId)
+          .maybeSingle();
+        if (error) throw error;
+        return data ? { id: data.id as string, absenceCaseId: data.absence_case_id as string } : null;
+      },
+      async finishAttempt(attemptId: string, status: Extract<CallAttemptStatus, "no_answer" | "failed">) {
+        const supabase = createSupabaseServiceClient();
+        const { data, error } = await supabase
+          .from("call_attempts")
+          .update({ status })
+          .eq("id", attemptId)
+          .eq("status", "calling")
+          .select("id")
+          .maybeSingle();
+        if (error) throw error;
+        return Boolean(data);
+      },
+      advanceCascade: callNextCandidate,
+    };
+    // Only the signed call-initiation failure event is acted on. Post-call
+    // transcription events are not configured or persisted by this endpoint.
+    await handleElevenLabsCallEvent(event as ProviderCallEvent, dependencies);
+    return new Response(null, { status: 204 });
+  } catch (error) {
+    console.error("ElevenLabs call status processing failed", error);
+    return Response.json({ error: "status_processing_failed" }, { status: 500 });
   }
-
-  const { data: employee } = await supabase
-    .from("employees")
-    .select("*")
-    .eq("id", attempt.employee_id)
-    .single<Employee>();
-
-  const status = callStatus === "failed" ? "failed" : "no_answer";
-  const { error: updateError } = await supabase
-    .from("call_attempts")
-    .update({ status })
-    .eq("id", attemptId);
-
-  if (updateError) {
-    throw updateError;
-  }
-
-  await insertEvent(supabase, {
-    absenceCaseId: attempt.absence_case_id,
-    type: status === "failed" ? "call_failed" : "call_no_answer",
-    message: `${employee?.name ?? "Candidate"} did not accept the call.`,
-    payload: { attemptId, callStatus },
-  });
-
-  await callNextCandidate(attempt.absence_case_id);
-
-  return Response.json({ ok: true });
 }

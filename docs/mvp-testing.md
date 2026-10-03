@@ -66,10 +66,10 @@ B=http://localhost:3000/api
 curl -X POST $B/demo/reset
 curl -X POST $B/absences -H 'content-type: application/json' -d '{"employee_id":"jade","shift_id":"shift-5","kind":"absence"}'
 curl $B/absences                                   # copy the report id
-curl -X POST $B/absences/<id>/find-replacement     # offers go to eli and sacha
-curl "$B/shifts/open?employee_id=eli"              # copy the offer id
-curl -X POST $B/shifts/<offer_id>/accept -H 'content-type: application/json' -d '{"employee_id":"eli"}'
+curl -X POST $B/absences/<id>/find-replacement     # offers go to mathieu and kash
+curl "$B/shifts/open?employee_id=mathieu"              # copy the offer id
+curl -X POST $B/shifts/<offer_id>/accept -H 'content-type: application/json' -d '{"employee_id":"mathieu"}'
 ```
 
-In the app: on the home page pick **Jade** as demo account → "Je suis extra" → Shifts → *Absence*. Then "Je suis gérant" → Ce soir → *Trouver un remplaçant*. Pick **Eli** as demo account → Shifts → *Accepter*. Demo shift dates are always "tomorrow" and "the day after" (UTC).
+In the app: on the home page pick **Jade** as demo account → "Je suis extra" → Shifts → *Absence*. Then "Je suis gérant" → Ce soir → *Trouver un remplaçant*. Pick **Mathieu** as demo account → Shifts → *Accepter*. Demo shift dates are always "tomorrow" and "the day after" (UTC).
 Set `DEMO_SECRET` in `backend/.env.local` to require `x-demo-secret` on `/api/demo/*`.

@@ -22,7 +22,7 @@ beforeEach(() => {
   state = createSeedState(now);
 });
 
-// Jade a le shift bar de demain soir (shift-5). Les remplaçants éligibles : Eli (bar) et Sacha (skill bar).
+// Jade a le shift bar de demain soir (shift-5). Les remplaçants éligibles : Mathieu (bar) et Kash (skill bar).
 function jadeReportsAbsence() {
   return reportShift(state, { employeeId: "jade", shiftId: "shift-5", kind: "absence" }, now);
 }
@@ -72,7 +72,7 @@ describe("findReplacement", () => {
 
     expect(result.report.status).toBe("searching");
     // Inès a skill bar mais travaille à midi : moins de 11 h de repos -> exclue.
-    expect(state.offers.map((o) => o.employee_id).sort()).toEqual(["eli", "sacha"]);
+    expect(state.offers.map((o) => o.employee_id).sort()).toEqual(["kash", "mathieu"]);
     expect(state.shifts.find((s) => s.id === "shift-5")).toMatchObject({ employee_id: null, status: "vacant" });
   });
 
@@ -105,33 +105,33 @@ describe("respondToOffer (autopilot)", () => {
     const { report } = jadeReportsAbsence();
     findReplacement(state, report.id, now);
 
-    const outcome = respondToOffer(state, { offerId: offerFor("eli").id, employeeId: "eli", accept: true }, now);
+    const outcome = respondToOffer(state, { offerId: offerFor("mathieu").id, employeeId: "mathieu", accept: true }, now);
 
     expect(outcome.outcome).toBe("accepted");
     expect(state.shifts.find((s) => s.id === "shift-5")).toMatchObject({
-      employee_id: "eli",
+      employee_id: "mathieu",
       status: "covered",
       replacement_for_employee_id: "jade",
     });
     expect(state.reports[0].status).toBe("resolved");
-    expect(offerFor("sacha").status).toBe("closed");
+    expect(offerFor("kash").status).toBe("closed");
   });
 
   it("ignores a second acceptance: only one winner", () => {
     const { report } = jadeReportsAbsence();
     findReplacement(state, report.id, now);
-    respondToOffer(state, { offerId: offerFor("eli").id, employeeId: "eli", accept: true }, now);
+    respondToOffer(state, { offerId: offerFor("mathieu").id, employeeId: "mathieu", accept: true }, now);
 
-    const late = respondToOffer(state, { offerId: offerFor("sacha").id, employeeId: "sacha", accept: true }, now);
+    const late = respondToOffer(state, { offerId: offerFor("kash").id, employeeId: "kash", accept: true }, now);
 
     expect(late).toEqual({ outcome: "ignored", reason: "closed" });
-    expect(state.shifts.find((s) => s.id === "shift-5")?.employee_id).toBe("eli");
+    expect(state.shifts.find((s) => s.id === "shift-5")?.employee_id).toBe("mathieu");
   });
 
   it("ignores a duplicate answer to the same offer", () => {
     const { report } = jadeReportsAbsence();
     findReplacement(state, report.id, now);
-    const input = { offerId: offerFor("eli").id, employeeId: "eli", accept: true };
+    const input = { offerId: offerFor("mathieu").id, employeeId: "mathieu", accept: true };
     respondToOffer(state, input, now);
 
     expect(respondToOffer(state, input, now)).toEqual({ outcome: "ignored", reason: "accepted" });
@@ -141,7 +141,7 @@ describe("respondToOffer (autopilot)", () => {
     const { report } = jadeReportsAbsence();
     findReplacement(state, report.id, now);
 
-    expect(() => respondToOffer(state, { offerId: offerFor("eli").id, employeeId: "sacha", accept: true }, now)).toThrow(
+    expect(() => respondToOffer(state, { offerId: offerFor("mathieu").id, employeeId: "kash", accept: true }, now)).toThrow(
       /pas pour vous/,
     );
   });
@@ -149,10 +149,10 @@ describe("respondToOffer (autopilot)", () => {
   it("raises an alert when everyone declines", () => {
     const { report } = jadeReportsAbsence();
     findReplacement(state, report.id, now);
-    respondToOffer(state, { offerId: offerFor("eli").id, employeeId: "eli", accept: false }, now);
+    respondToOffer(state, { offerId: offerFor("mathieu").id, employeeId: "mathieu", accept: false }, now);
     expect(state.reports[0].status).toBe("searching");
 
-    respondToOffer(state, { offerId: offerFor("sacha").id, employeeId: "sacha", accept: false }, now);
+    respondToOffer(state, { offerId: offerFor("kash").id, employeeId: "kash", accept: false }, now);
 
     expect(state.reports[0].status).toBe("unresolved");
     expect(state.events.some((e) => e.type === "no_replacement")).toBe(true);
@@ -163,7 +163,7 @@ describe("respondToOffer (autopilot)", () => {
     findReplacement(state, report.id, now);
     const afterStart = new Date("2026-10-04T18:30:00.000Z");
 
-    const outcome = respondToOffer(state, { offerId: offerFor("eli").id, employeeId: "eli", accept: true }, afterStart);
+    const outcome = respondToOffer(state, { offerId: offerFor("mathieu").id, employeeId: "mathieu", accept: true }, afterStart);
 
     expect(outcome).toEqual({ outcome: "ignored", reason: "closed" });
     expect(state.shifts.find((s) => s.id === "shift-5")?.status).toBe("vacant");
@@ -179,27 +179,27 @@ describe("manager approval mode", () => {
     const { report } = jadeReportsAbsence();
     findReplacement(state, report.id, now);
 
-    const outcome = respondToOffer(state, { offerId: offerFor("eli").id, employeeId: "eli", accept: true }, now);
+    const outcome = respondToOffer(state, { offerId: offerFor("mathieu").id, employeeId: "mathieu", accept: true }, now);
 
     expect(outcome.outcome).toBe("pending_approval");
     expect(state.shifts.find((s) => s.id === "shift-5")?.status).toBe("vacant");
 
     approveReplacement(state, report.id, now);
 
-    expect(state.shifts.find((s) => s.id === "shift-5")).toMatchObject({ employee_id: "eli", status: "covered" });
+    expect(state.shifts.find((s) => s.id === "shift-5")).toMatchObject({ employee_id: "mathieu", status: "covered" });
     expect(state.reports[0].status).toBe("resolved");
   });
 
   it("goes back to searching when the manager rejects the replacement", () => {
     const { report } = jadeReportsAbsence();
     findReplacement(state, report.id, now);
-    respondToOffer(state, { offerId: offerFor("eli").id, employeeId: "eli", accept: true }, now);
+    respondToOffer(state, { offerId: offerFor("mathieu").id, employeeId: "mathieu", accept: true }, now);
 
     rejectReplacement(state, report.id, now);
 
     expect(state.reports[0].status).toBe("searching");
-    expect(offerFor("eli").status).toBe("rejected");
-    expect(offerFor("sacha").status).toBe("pending");
+    expect(offerFor("mathieu").status).toBe("rejected");
+    expect(offerFor("kash").status).toBe("pending");
   });
 
   it("refuses to approve when nothing is waiting", () => {
@@ -214,7 +214,7 @@ describe("lists", () => {
     const { report } = jadeReportsAbsence();
     findReplacement(state, report.id, now);
 
-    const [card] = listOffersForEmployee(state, "eli", now);
+    const [card] = listOffersForEmployee(state, "mathieu", now);
 
     expect(card).toMatchObject({ role: "Bar", restaurant: "Chez Odile", start: "18:00", end: "23:00", hourly_rate: 16, urgent: false });
     expect(listOffersForEmployee(state, "tom", now)).toEqual([]);
@@ -224,7 +224,7 @@ describe("lists", () => {
     const { report } = jadeReportsAbsence();
     findReplacement(state, report.id, now);
 
-    const [card] = listOffersForEmployee(state, "eli", new Date("2026-10-04T10:00:00.000Z"));
+    const [card] = listOffersForEmployee(state, "mathieu", new Date("2026-10-04T10:00:00.000Z"));
 
     expect(card.urgent).toBe(true);
   });

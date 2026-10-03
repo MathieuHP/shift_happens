@@ -14,6 +14,7 @@ Copier-coller le bloc « PROMPT » ci-dessous dans Claude Code (ou un autre agen
 | `VOICE_ENABLED` | `true` / `false` | Interrupteur général (faux = mode simulé étiqueté) |
 | `VOICE_TOOL_SECRET` | chaîne aléatoire | Secret partagé : ElevenLabs l'envoie dans un en-tête quand l'agent appelle nos routes |
 | `PUBLIC_BASE_URL` | `https://xxxx.ngrok.app` | URL publique du backend (les outils de l'agent doivent l'atteindre) |
+| `DEMO_PHONE_MATHIEU` / `DEMO_PHONE_KASH` | `+32…` | Numéros réels des deux extras de la démo (seuls extras du seed, `backend/lib/inapp/state.ts`) ; lus depuis `.env.local`, jamais dans git |
 | `DEMO_PHONE_OVERRIDE` | `+32…` | Si défini, TOUS les appels vont à ce numéro de test (jamais d'appel à un vrai extra pendant la démo) |
 | `CALL_TIMEOUT_SECONDS` | `45` | Délai avant de passer au candidat suivant |
 | `CONTACT_WINDOW_START` / `_END` | `08:00` / `21:00` | Plage horaire autorisée pour appeler (heure du restaurant) |

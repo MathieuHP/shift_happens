@@ -53,7 +53,7 @@ Triggers the automated no-show escalation: no check-in, one call to the schedule
 
 ## Flux in-app — signalement, recherche de remplaçant, offres (backend réel)
 
-Ces routes sont **implémentées dans `backend/`** (Next.js, `backend/app/api/`). Le front les appelle toujours via le proxy `/api` (jamais de données factices). Pas d'authentification : l'employé est identifié par `employee_id` (comptes de démo : `sacha`, `noor`, `eli`, `ines`, `tom`, `lucie`, `mehdi`, `jade`).
+Ces routes sont **implémentées dans `backend/`** (Next.js, `backend/app/api/`). Le front les appelle toujours via le proxy `/api` (jamais de données factices). Pas d'authentification : l'employé est identifié par `employee_id` (comptes de démo : `mathieu`, `kash` (les deux seuls extras, de vraies personnes), `ines`, `tom`, `lucie`, `mehdi`, `jade`).
 Les heures sont en UTC (`"HH:MM"`). Erreur : `{ "error": { "code": "...", "message": "..." } }` avec un code HTTP 4xx/5xx.
 
 ### `GET /api/my-shifts?employee_id=jade`
@@ -95,7 +95,7 @@ Sans corps. `approve` affecte le remplaçant qui a accepté (`resolved`). `rejec
 { "id": "4b07…", "status": "resolved" }
 ```
 
-### `GET /api/shifts/open?employee_id=eli` — les offres reçues (écran « Shifts ouverts »)
+### `GET /api/shifts/open?employee_id=mathieu` — les offres reçues (écran « Shifts ouverts »)
 Le champ `id` est l'identifiant de l'**offre**. Une offre reste valable jusqu'au début du shift.
 ```json
 [ { "id": "6217…", "role": "Bar", "restaurant": "Chez Odile", "date": "2026-10-04",
@@ -106,7 +106,7 @@ Le champ `id` est l'identifiant de l'**offre**. Une offre reste valable jusqu'au
 ### `POST /api/shifts/{offer_id}/accept` et `/refuse`
 ```json
 // requête
-{ "employee_id": "eli" }
+{ "employee_id": "mathieu" }
 // réponse : outcome = accepted | pending_approval | declined | ignored
 { "id": "6217…", "outcome": "accepted" }
 { "id": "6217…", "outcome": "ignored", "reason": "closed" }
@@ -158,7 +158,7 @@ Le front compte lui-même les shifts à pourvoir et les extras. Le coût de main
       "closed": false,
       "midi": [
         { "name": "Inès", "role": "Salle", "kind": "fixe" },
-        { "name": "Noor", "role": "Cuisine", "kind": "extra" }
+        { "name": "Kash", "role": "Salle", "kind": "extra" }
       ],
       "soir": [
         { "name": null, "role": "Bar", "kind": "a_pourvoir" }
@@ -178,7 +178,7 @@ Le front compte lui-même les shifts à pourvoir et les extras. Le coût de main
 {
   "members": [
     { "id": "e1", "name": "Inès", "role": "Salle", "type": "fixe", "hourly_rate": 16 },
-    { "id": "x1", "name": "Sacha", "role": "Salle", "type": "extra", "hourly_rate": 16 }
+    { "id": "x1", "name": "Kash", "role": "Salle", "type": "extra", "hourly_rate": 16 }
   ]
 }
 ```
@@ -202,14 +202,14 @@ Voir `docs/stripe-setup.md` pour la mise en place. Toutes ces routes sont dans `
 `status` : `to_validate`, `processing`, `paid`, `reversed`. Une ligne est créée pour chaque shift couvert par un remplaçant.
 - `GET /api/payables`
 ```json
-{ "items": [ { "id": "…", "shift_id": "shift-5", "employee_id": "eli", "employee_name": "Eli",
+{ "items": [ { "id": "…", "shift_id": "shift-5", "employee_id": "mathieu", "employee_name": "Mathieu",
   "label": "Bar · Chez Odile", "date": "2026-10-04", "hours": 5, "hourly_rate": 16,
   "amount": 80, "amount_cents": 8000, "currency": "eur", "status": "to_validate",
   "stripe_transfer_id": null, "error": null, "has_payout_account": false } ],
   "to_validate_total": 80 }
 ```
-- `POST /api/payables/pay-all` → `{ "results": [ { "id": "…", "employee_name": "Eli", "ok": false, "error": "…" } ], "paid": 0, "failed": 1 }`. Une ligne en échec n'empêche pas les autres ; un virement n'est jamais créé deux fois.
+- `POST /api/payables/pay-all` → `{ "results": [ { "id": "…", "employee_name": "Mathieu", "ok": false, "error": "…" } ], "paid": 0, "failed": 1 }`. Une ligne en échec n'empêche pas les autres ; un virement n'est jamais créé deux fois.
 - `POST /api/payables/{id}/pay` → `{ "id": "…", "status": "paid", "stripe_transfer_id": "tr_…" }`. Erreurs : `payout_account_missing`, `payout_account_not_ready` (409), `shift_not_finished` (409, sauf `ALLOW_EARLY_PAYOUT=true`), `transfer_failed` (502).
-- `GET /api/earnings?employee_id=eli` → `{ "week_total": 80, "last_payment": { "amount": 80, "date": "2026-10-04" } | null, "items": [ { "id": "…", "type": "shift", "label": "Bar · Chez Odile", "date": "2026-10-04", "amount": 80, "status": "paid|upcoming" } ] }`
-- `GET /api/payout-account?employee_id=eli` → `{ "status": "none|pending|ready" }`
-- `POST /api/payout-account` `{ "employee_id": "eli", "email": "eli@example.com" }` → `{ "url": "https://connect.stripe.com/…" }` (inscription hébergée par Stripe). Erreur `sandbox_required` (501) tant que les clés ne sont pas celles d'un sandbox Stripe.
+- `GET /api/earnings?employee_id=mathieu` → `{ "week_total": 80, "last_payment": { "amount": 80, "date": "2026-10-04" } | null, "items": [ { "id": "…", "type": "shift", "label": "Bar · Chez Odile", "date": "2026-10-04", "amount": 80, "status": "paid|upcoming" } ] }`
+- `GET /api/payout-account?employee_id=mathieu` → `{ "status": "none|pending|ready" }`
+- `POST /api/payout-account` `{ "employee_id": "mathieu", "email": "mathieu@example.com" }` → `{ "url": "https://connect.stripe.com/…" }` (inscription hébergée par Stripe). Erreur `sandbox_required` (501) tant que les clés ne sont pas celles d'un sandbox Stripe.

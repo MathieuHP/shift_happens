@@ -7,7 +7,7 @@ import { createPayoutOnboarding, getPayoutAccountStatus } from "@/lib/payouts/se
 import { filePayoutsStore } from "@/lib/payouts/store";
 import { frontendUrl, getStripe } from "@/lib/stripe/client";
 
-// GET /api/payout-account?employee_id=eli -> { status: "none" | "pending" | "ready" }
+// GET /api/payout-account?employee_id=mathieu -> { status: "none" | "pending" | "ready" }
 export async function GET(request: Request) {
   return handle(() => {
     const employeeId = z.string().min(1, "employee_id manquant").parse(new URL(request.url).searchParams.get("employee_id"));
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   });
 }
 
-// POST /api/payout-account  { "employee_id": "eli", "email": "eli@example.com" } -> { url }
+// POST /api/payout-account  { "employee_id": "mathieu", "email": "mathieu@example.com" } -> { url }
 // Lien d'inscription hébergé par Stripe (identité, IBAN). L'e-mail est demandé à l'extra dans l'app.
 export async function POST(request: Request) {
   return handle(async () => {

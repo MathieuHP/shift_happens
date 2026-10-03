@@ -18,5 +18,13 @@ export function getStripe(): Stripe {
 
 // Adresse du front, utilisée pour les retours de Checkout et d'onboarding.
 export function frontendUrl() {
-  return optionalEnv("FRONTEND_URL") ?? "http://localhost:5173";
+  const configuredUrl = optionalEnv("FRONTEND_URL");
+  if (configuredUrl) return configuredUrl.replace(/\/$/, "");
+
+  // Vercel serves both services on this deployment hostname. The internal
+  // service binding URL must never be sent to a customer's browser.
+  const deploymentHost = optionalEnv("VERCEL_URL");
+  if (deploymentHost) return `https://${deploymentHost}`;
+
+  return "http://localhost:5173";
 }

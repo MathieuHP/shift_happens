@@ -1,12 +1,10 @@
 # Contrat d'API (proposition du front)
 
-À valider avec l'équipe backend (FastAPI). Le front utilise exactement ces routes et ces noms de champs (snake_case).
-Tant que `VITE_API_URL` est vide dans `frontend/.env`, les écrans sans backend utilisent `src/mock.js`, qui renvoie les mêmes formes de JSON. Le flux in-app (section ci-dessous) a besoin du backend : `npm run backend:dev`.
+Le backend Next.js est dans `backend/`. Le front utilise ces routes et ces noms de champs (snake_case).
+Les écrans sans route backend utilisent `src/mock.js`, qui renvoie les mêmes formes de JSON. Le flux in-app (section ci-dessous) a besoin du backend : `npm run backend:dev`.
 
 Conventions : dates `"AAAA-MM-JJ"`, heures `"HH:MM"`, montants en euros (nombre, ex. `82.5`). Pas d'authentification pour l'instant. Toute erreur = code HTTP ≠ 2xx (le front affiche un message générique).
-Le backend doit autoriser le CORS pour l'adresse du front (`http://localhost:5173`).
-
-For the current hackathon integration, Vite proxies `/api/*` to the Next backend at `http://localhost:3000`, so no browser CORS setup is needed during local development.
+Le front appelle toujours `/api/*` sur le même domaine. Vercel route ce chemin au service backend ; en développement autonome, Vite le relaie à `http://localhost:3000`. Aucun CORS navigateur n'est nécessaire pour ce parcours.
 
 ---
 

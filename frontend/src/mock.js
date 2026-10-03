@@ -1,4 +1,4 @@
-// Données factices utilisées tant que le backend n'est pas prêt (VITE_API_URL vide).
+// Données factices pour les écrans dont les routes backend ne sont pas encore prêtes.
 // Restaurant « Coli Brasserie », semaine du 5 au 11 octobre 2026, fermé le lundi.
 // Les noms des champs (snake_case) sont ceux décrits dans API_CONTRACT.md.
 import { addDays } from './format.js'

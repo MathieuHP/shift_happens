@@ -1,14 +1,11 @@
 // Tous les appels réseau de l'app passent par ce fichier.
 // - Flux "tout dans l'app", Stripe, démo « Remplacements » : toujours le vrai backend (fonction `request`).
-//   Adresse du backend : VITE_API_URL (en production) ; vide = même domaine / proxy Vite en local.
+//   Adresse du backend : même domaine, via les rewrites Vercel ou le proxy Vite local.
 // - Dispos, planning, équipe, « Ce soir » : données factices de mock.js (le backend n'a pas encore ces routes),
-//   quelle que soit la valeur de VITE_API_URL.
+//   quel que soit le mode de déploiement.
 //
 // Les routes et le format du JSON sont décrits dans API_CONTRACT.md.
 import * as mock from './mock.js'
-
-// Adresse du backend. Vide = même domaine (proxy Vite en local, rewrites en production).
-const API_BASE = import.meta.env.VITE_API_URL || ''
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -17,13 +14,13 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 async function request(path, method = 'GET', body) {
   let response
   try {
-    response = await fetch(API_BASE + path, {
+    response = await fetch(path, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: body ? JSON.stringify(body) : undefined,
     })
   } catch {
-    throw new Error('Backend injoignable. Lancez « npm run backend:dev » à la racine du projet.')
+    throw new Error('Backend injoignable. Vérifiez que le service backend est démarré.')
   }
   if (!response.ok) {
     const data = await response.json().catch(() => null)

@@ -4,6 +4,8 @@
 import { getEligibleCandidates } from "@/lib/matching/eligibleCandidates";
 import type { Shift } from "@/lib/types";
 
+import { localDate, localTime } from "./time";
+
 import {
   DomainError,
   type AppEvent,
@@ -73,21 +75,19 @@ export function reportShift(
     employee_id: employee.id,
     kind: input.kind,
     eta: input.kind === "delay" ? (input.eta ?? null) : null,
-    status: input.kind === "absence" ? "open" : "delay_noted",
+    status: input.kind === "delay" ? "delay_noted" : "open",
     accepted_employee_id: null,
     created_at: now.toISOString(),
   };
   state.reports.push(report);
 
-  addEvent(
-    state,
-    report.id,
-    input.kind === "absence" ? "absence_reported" : "delay_reported",
-    input.kind === "absence"
-      ? `${employee.name} signale une absence.`
-      : `${employee.name} signale un retard${report.eta ? ` (arrivée vers ${report.eta})` : ""}.`,
-    now,
-  );
+  const messages: Record<ReportKind, string> = {
+    absence: `${employee.name} signale une absence.`,
+    delay: `${employee.name} signale un retard${report.eta ? ` (arrivée vers ${report.eta})` : ""}.`,
+    no_show: `${employee.name} n'a pas pointé : son shift commence dans 5 minutes.`,
+  };
+  const types = { absence: "absence_reported", delay: "delay_reported", no_show: "no_show_detected" } as const;
+  addEvent(state, report.id, types[input.kind], messages[input.kind], now);
 
   return { report, created: true };
 }
@@ -136,9 +136,17 @@ export function findReplacement(state: AppState, reportId: string, now: Date) {
   }));
   state.offers.push(...offers);
   report.status = "searching";
-  addEvent(state, report.id, "search_started", `Offre envoyée à ${candidates.length} personne(s).`, now);
+  addEvent(state, report.id, "search_started", `Offre envoyée à ${candidates.map((c) => c.name).join(", puis ")}.`, now);
+  announceNextCall(state, report.id, now);
 
   return { report, offers, candidateCount: candidates.length, alreadyStarted: false };
+}
+
+// Le prochain candidat à appeler = la première offre encore en attente (l'ordre est celui de l'éligibilité).
+// On le note dans la timeline ; l'appel vocal automatique se branchera ici.
+function announceNextCall(state: AppState, reportId: string, now: Date) {
+  const next = state.offers.find((o) => o.report_id === reportId && o.status === "pending");
+  if (next) addEvent(state, reportId, "call_started", `Appel de ${employeeName(state, next.employee_id)}…`, now);
 }
 
 function offersOfReport(state: AppState, reportId: string) {
@@ -179,10 +187,12 @@ export function respondToOffer(
   if (!input.accept) {
     offer.status = "declined";
     addEvent(state, report.id, "offer_declined", `${name} a refusé le shift.`, now);
-    // Plus personne à attendre -> alerte gérant.
+    // Plus personne à attendre -> alerte gérant. Sinon on passe au candidat suivant.
     if (!state.offers.some((o) => o.report_id === report.id && o.status === "pending")) {
       report.status = "unresolved";
       addEvent(state, report.id, "no_replacement", "Tout le monde a refusé : aucun remplaçant.", now);
+    } else {
+      announceNextCall(state, report.id, now);
     }
     return { outcome: "declined" };
   }
@@ -263,9 +273,9 @@ export function listOffersForEmployee(state: AppState, employeeId: string, now: 
           id: offer.id,
           role: roleLabel(shift.role),
           restaurant: state.restaurant_name,
-          date: shift.starts_at.slice(0, 10),
-          start: shift.starts_at.slice(11, 16),
-          end: shift.ends_at.slice(11, 16),
+          date: localDate(shift.starts_at),
+          start: localTime(shift.starts_at),
+          end: localTime(shift.ends_at),
           hourly_rate: shift.hourly_rate ?? 0,
           urgent: start.getTime() - now.getTime() < 24 * 3600 * 1000, // commence dans moins de 24 h
         },
@@ -285,9 +295,9 @@ export function listShiftsForEmployee(state: AppState, employeeId: string, now: 
     .map((s) => ({
       id: s.id,
       role: roleLabel(s.role),
-      date: s.starts_at.slice(0, 10),
-      start: s.starts_at.slice(11, 16),
-      end: s.ends_at.slice(11, 16),
+      date: localDate(s.starts_at),
+      start: localTime(s.starts_at),
+      end: localTime(s.ends_at),
       reported: state.reports
         .filter((r) => r.shift_id === s.id && r.employee_id === employeeId)
         .map((r) => r.kind),
@@ -311,9 +321,9 @@ export function listReports(state: AppState) {
         shift: shift
           ? {
               role: roleLabel(shift.role),
-              date: shift.starts_at.slice(0, 10),
-              start: shift.starts_at.slice(11, 16),
-              end: shift.ends_at.slice(11, 16),
+              date: localDate(shift.starts_at),
+              start: localTime(shift.starts_at),
+              end: localTime(shift.ends_at),
             }
           : null,
         offers_sent: offers.length,

@@ -1,8 +1,9 @@
 // Types du flux "tout dans l'app" (voir docs/09-open-decisions.md).
 import type { Employee, Shift } from "@/lib/types";
 
-export type ReportKind = "absence" | "delay";
+export type ReportKind = "absence" | "delay" | "no_show";
 
+// no_show = l'employé n'a pas pointé 5 minutes avant son shift (déclenché par la démo, pas par un bouton d'employé)
 // open            : absence signalée, le gérant n'a pas encore lancé la recherche
 // delay_noted     : retard signalé, le gérant est prévenu (pas de recherche automatique)
 // searching       : offres envoyées aux remplaçants éligibles
@@ -42,7 +43,9 @@ export type Offer = {
 export type AppEventType =
   | "absence_reported"
   | "delay_reported"
+  | "no_show_detected"
   | "search_started"
+  | "call_started"
   | "offer_declined"
   | "replacement_accepted"
   | "approval_requested"

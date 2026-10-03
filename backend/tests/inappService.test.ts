@@ -234,8 +234,8 @@ describe("lists", () => {
 
     const shifts = listShiftsForEmployee(state, "jade", now);
 
-    expect(shifts.map((s) => s.id)).toEqual(["shift-5", "shift-7"]);
-    expect(shifts[0].reported).toEqual(["absence"]);
+    expect(shifts.map((s) => s.id)).toEqual(["tonight-jade", "shift-5", "shift-7"]);
+    expect(shifts[1].reported).toEqual(["absence"]);
   });
 
   it("gives the manager a summary per report", () => {

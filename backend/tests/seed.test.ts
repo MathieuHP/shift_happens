@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 describe("demo seed", () => {
-  it("has Mathieu and Kash as the only extras, called in this order", () => {
+  it("has Mathieu and Kash as the only extras, called in this order: Kash first", () => {
     const state = createSeedState(now);
     expect(state.employees.map((e) => e.id)).toEqual(expect.arrayContaining(["mathieu", "kash"]));
     expect(state.employees.map((e) => e.id)).not.toEqual(expect.arrayContaining(["sacha"]));
@@ -20,7 +20,7 @@ describe("demo seed", () => {
     const { report } = reportShift(state, { employeeId: "jade", shiftId: "shift-5", kind: "absence" }, now);
     findReplacement(state, report.id, now);
 
-    expect(state.offers.map((o) => o.employee_id)).toEqual(["mathieu", "kash"]);
+    expect(state.offers.map((o) => o.employee_id)).toEqual(["kash", "mathieu"]);
   });
 
   it("takes the real phone numbers from the environment", () => {

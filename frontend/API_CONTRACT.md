@@ -10,19 +10,41 @@ For the current hackathon integration, Vite proxies `/api/*` to the Next backend
 
 ---
 
-## Écran démo — Cascade ShiftSaver
+## Écran « Remplacements » (démo en direct)
+
+Toute l'équipe fixe est en poste ce soir ; Kash et Mathieu sont les seuls extras disponibles. Un déclenchement lance la recherche de remplaçant tout de suite (autopilot) : **Kash est contacté en premier, puis Mathieu**. L'écran se rafraîchit toutes les 3 s. Les horaires sont ceux du restaurant (Europe/Brussels, variable `RESTAURANT_TIMEZONE`). Ces routes sont protégées par `x-demo-secret` si `DEMO_SECRET` est défini.
 
 ### `GET /api/demo/state`
-Returns the current manager dashboard state: `status`, `roster`, `schedule`, `currentCase`, `timeline`, `managerNotification`.
-
-### `POST /api/demo/absence`
-Triggers the autonomous replacement cascade.
 ```json
-{ "fromPhone": "+15550001001", "body": "I am sick and cannot make my 8 AM shift" }
+{
+  "mode": "live", "simulated": false, "status": "calling", "updatedAt": "2026-10-03T14:20:00.000Z",
+  "managerNotification": "Jade n'a pas pointé. J'appelle Kash…",
+  "roster": [
+    { "id": "jade", "name": "Jade", "role": "Bar", "phone": "+3255500…", "status": "absent" },
+    { "id": "kash", "name": "Kash", "role": "Salle", "phone": "+32…", "status": "called" },
+    { "id": "mathieu", "name": "Mathieu", "role": "Bar", "phone": "+32…", "status": "queued" }
+  ],
+  "schedule": [ { "id": "tonight-jade", "role": "Bar", "startsAt": "16:25", "endsAt": "21:20", "status": "vacant", "employeeName": null, "replacementFor": null } ],
+  "currentCase": { "id": "…", "trigger": "no_show", "absentEmployee": "Jade", "replacementEmployee": null, "shiftRole": "Bar", "startsAt": "16:25", "endsAt": "21:20", "candidateCount": 2, "cascadeStatus": "searching" },
+  "timeline": [
+    { "type": "no_show_detected", "message": "Jade n'a pas pointé : son shift commence dans 5 minutes.", "at": "2026-10-03T14:20:01.120Z", "time": "16:20:01" },
+    { "type": "search_started", "message": "Offre envoyée à Kash, puis Mathieu.", "at": "2026-10-03T14:20:01.130Z", "time": "16:20:01" },
+    { "type": "call_started", "message": "Appel de Kash…", "at": "2026-10-03T14:20:01.131Z", "time": "16:20:01" }
+  ]
+}
 ```
+`timeline[].at` : instant exact (ISO) ; `timeline[].time` : heure du restaurant avec secondes. Types : `no_show_detected`, `absence_reported`, `search_started`, `call_started` (« Appel de Kash… », un par candidat, dans l'ordre), `offer_declined`, `replacement_accepted`, `case_resolved`, `no_replacement`.
+
+`roster[].status` : `scheduled` (en poste), `available` (extra disponible), `queued` (dans la file), `called` (appelé en ce moment), `declined`, `accepted`, `absent`. `status` global : `idle`, `calling`, `resolved`. `schedule[].status` : `scheduled`, `vacant`, `covered`.
 
 ### `POST /api/demo/no-show`
-Triggers the automated no-show escalation: no check-in, one call to the scheduled employee, no answer, then replacement cascade.
+Simule : Jade n'a pas pointé 5 minutes avant son shift. Renvoie `{ "started": true|false, …état comme ci-dessus }`. Un second clic pendant l'incident ne crée rien (`started: false`). Quand l'incident est fini, un nouveau clic repart d'un état propre.
+
+### `POST /api/demo/absence`
+Même cascade, déclenchée comme une absence signalée par SMS (`currentCase.trigger: "sick_sms"`). Aucun corps de requête.
+
+### `POST /api/demo/reset`
+Remet la démo à zéro (voir plus haut).
 
 ---
 

@@ -8,7 +8,7 @@ import {
 describe("VoiceProvider", () => {
   it("supports a fake provider without starting a real call", async () => {
     const fake: VoiceProvider = {
-      placeCall: vi.fn(async () => ({
+      placeCall: vi.fn<VoiceProvider["placeCall"]>(async () => ({
         mode: "simulated",
         conversationId: "conversation-test",
         callSid: "call-test",

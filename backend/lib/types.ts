@@ -25,6 +25,7 @@ export type EventType =
   | "call_declined"
   | "call_no_answer"
   | "call_failed"
+  | "candidate_skipped"
   | "replacement_accepted"
   | "case_resolved"
   | "case_unresolved"

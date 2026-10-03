@@ -39,6 +39,8 @@ create table if not exists employees (
   created_at timestamptz not null default now()
 );
 
+alter table employees add column if not exists contact_consent_at timestamptz;
+
 create table if not exists shifts (
   id uuid primary key default gen_random_uuid(),
   restaurant_account_id uuid not null references restaurant_accounts(id) on delete cascade,

@@ -15,9 +15,7 @@ export interface VoiceProvider {
 
 export class SimulatedVoiceProvider implements VoiceProvider {
   async placeCall(request: PlaceCallRequest): Promise<PlaceCallResult> {
-    console.info(
-      `[SIMULÉ] Voice call requested (key=${request.idempotencyKey}, to=${request.toNumber})`,
-    );
+    console.info(`[SIMULÉ] Voice call requested (key=${request.idempotencyKey})`);
     return { mode: "simulated", conversationId: null, callSid: null };
   }
 }

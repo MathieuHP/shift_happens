@@ -1,7 +1,7 @@
 # Contrat d'API (proposition du front)
 
 À valider avec l'équipe backend (FastAPI). Le front utilise exactement ces routes et ces noms de champs (snake_case).
-Tant que `VITE_API_URL` est vide dans `frontend/.env`, le front utilise `src/mock.js`, qui renvoie les mêmes formes de JSON.
+Tant que `VITE_API_URL` est vide dans `frontend/.env`, les écrans sans backend utilisent `src/mock.js`, qui renvoie les mêmes formes de JSON. Le flux in-app (section ci-dessous) a besoin du backend : `npm run backend:dev`.
 
 Conventions : dates `"AAAA-MM-JJ"`, heures `"HH:MM"`, montants en euros (nombre, ex. `82.5`). Pas d'authentification pour l'instant. Toute erreur = code HTTP ≠ 2xx (le front affiche un message générique).
 Le backend doit autoriser le CORS pour l'adresse du front (`http://localhost:5173`).
@@ -51,31 +51,76 @@ Triggers the automated no-show escalation: no check-in, one call to the schedule
 
 ---
 
-## Écran 2 — Shifts ouverts (extra)
+## Flux in-app — signalement, recherche de remplaçant, offres (backend réel)
 
-### `GET /shifts/open`
-```json
-[
-  {
-    "id": "shift-1",
-    "role": "Bar",
-    "restaurant": "Chez Odile",
-    "date": "2026-10-07",
-    "start": "18:00",
-    "end": "23:00",
-    "hourly_rate": 16,
-    "urgent": true
-  }
-]
-```
-Le front calcule lui-même la durée (5 h), « 5 h × 16 € » et le total (80,00 €).
+Ces routes sont **implémentées dans `backend/`** (Next.js, `backend/app/api/`). Le front les appelle toujours via le proxy `/api` (jamais de données factices). Pas d'authentification : l'employé est identifié par `employee_id` (comptes de démo : `sacha`, `noor`, `eli`, `ines`, `tom`, `lucie`, `mehdi`, `jade`).
+Les heures sont en UTC (`"HH:MM"`). Erreur : `{ "error": { "code": "...", "message": "..." } }` avec un code HTTP 4xx/5xx.
 
-### `POST /shifts/{id}/accept` et `POST /shifts/{id}/refuse`
-Sans corps de requête.
+### `GET /api/my-shifts?employee_id=jade`
 ```json
-{ "id": "shift-1", "status": "accepted" }
+{ "shifts": [ { "id": "shift-5", "role": "Bar", "date": "2026-10-04", "start": "18:00", "end": "23:00", "reported": ["absence"] } ] }
 ```
-(`"refused"` pour le refus.)
+
+### `POST /api/absences` — l'employé signale une absence ou un retard
+`kind` : `absence` ou `delay`. `eta` (facultatif, retard seulement) : `"HH:MM"`. Un seul signalement par employé, shift et type (le doublon renvoie `created: false`).
+```json
+// requête
+{ "employee_id": "jade", "shift_id": "shift-5", "kind": "absence" }
+// réponse
+{ "id": "4b07…", "kind": "absence", "status": "open", "created": true }
+```
+Erreurs : `not_your_shift` (403), `shift_started` (409), `employee_not_found` (404).
+
+### `GET /api/absences` — liste pour le gérant
+`status` : `open` (absence), `delay_noted` (retard), `searching`, `pending_approval`, `resolved`, `unresolved` (alerte : aucun remplaçant).
+```json
+{ "items": [ {
+  "id": "4b07…", "kind": "absence", "status": "searching", "eta": null,
+  "employee_name": "Jade", "replacement_name": null,
+  "shift": { "role": "Bar", "date": "2026-10-04", "start": "18:00", "end": "23:00" },
+  "offers_sent": 2, "offers_declined": 0, "created_at": "2026-10-03T12:53:05.243Z"
+} ] }
+```
+
+### `POST /api/absences/{id}/find-replacement` — le gérant lance la recherche
+Sans corps. Calcule les remplaçants éligibles (rôle ou compétence, pas de chevauchement, repos 11 h avant et après, consentement de contact) et leur envoie une offre à tous. Un second appel ne renvoie pas d'offres (`already_started: true`).
+```json
+{ "id": "4b07…", "status": "searching", "offers_sent": 2, "already_started": false }
+```
+Si personne n'est éligible : `status: "unresolved"` (alerte).
+
+### `POST /api/absences/{id}/approve` et `/reject` — seulement si l'approbation est activée
+Sans corps. `approve` affecte le remplaçant qui a accepté (`resolved`). `reject` le refuse (retour à `searching`, ou `unresolved` s'il n'y a plus personne).
+```json
+{ "id": "4b07…", "status": "resolved" }
+```
+
+### `GET /api/shifts/open?employee_id=eli` — les offres reçues (écran « Shifts ouverts »)
+Le champ `id` est l'identifiant de l'**offre**. Une offre reste valable jusqu'au début du shift.
+```json
+[ { "id": "6217…", "role": "Bar", "restaurant": "Chez Odile", "date": "2026-10-04",
+    "start": "18:00", "end": "23:00", "hourly_rate": 16, "urgent": false } ]
+```
+`urgent` = le shift commence dans moins de 24 h. Le front calcule la durée et le total.
+
+### `POST /api/shifts/{offer_id}/accept` et `/refuse`
+```json
+// requête
+{ "employee_id": "eli" }
+// réponse : outcome = accepted | pending_approval | declined | ignored
+{ "id": "6217…", "outcome": "accepted" }
+{ "id": "6217…", "outcome": "ignored", "reason": "closed" }
+```
+Le premier à accepter gagne ; une réponse en double ou tardive est ignorée (`ignored`). Si tout le monde refuse : le signalement passe `unresolved`.
+
+### `GET /api/settings` et `PUT /api/settings`
+`manager_approval_required` : `false` (autopilot, par défaut) ou `true` (le gérant confirme chaque remplaçant).
+```json
+{ "manager_approval_required": true }
+```
+
+### `POST /api/demo/reset` — remet les données de démo à zéro
+Protégé par l'en-tête `x-demo-secret` si `DEMO_SECRET` est défini côté backend (comme les autres `/api/demo/*`).
 
 ---
 

@@ -56,3 +56,20 @@ If Supabase env vars are missing, this endpoint returns a deterministic simulate
 - `audit_events`: reserved for the next hardening pass.
 
 If Twilio env vars are missing, the backend records `demo_call_skipped`; this is expected and keeps the live Supabase path testable without real calls.
+
+## In-app flow (absence → replacement)
+
+Start both servers (`npm run backend:dev`, `npm run frontend:dev`), then either use the app or curl:
+
+```bash
+B=http://localhost:3000/api
+curl -X POST $B/demo/reset
+curl -X POST $B/absences -H 'content-type: application/json' -d '{"employee_id":"jade","shift_id":"shift-5","kind":"absence"}'
+curl $B/absences                                   # copy the report id
+curl -X POST $B/absences/<id>/find-replacement     # offers go to eli and sacha
+curl "$B/shifts/open?employee_id=eli"              # copy the offer id
+curl -X POST $B/shifts/<offer_id>/accept -H 'content-type: application/json' -d '{"employee_id":"eli"}'
+```
+
+In the app: on the home page pick **Jade** as demo account → "Je suis extra" → Shifts → *Absence*. Then "Je suis gérant" → Ce soir → *Trouver un remplaçant*. Pick **Eli** as demo account → Shifts → *Accepter*. Demo shift dates are always "tomorrow" and "the day after" (UTC).
+Set `DEMO_SECRET` in `backend/.env.local` to require `x-demo-secret` on `/api/demo/*`.

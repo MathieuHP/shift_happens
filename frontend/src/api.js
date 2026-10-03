@@ -11,13 +11,22 @@ const API_BASE = API_URL || ''
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // Appelle la vraie API et renvoie le JSON de la réponse.
+// Si le backend répond par une erreur, on garde son message (ex. « Ce shift n'est pas le vôtre. »).
 async function request(path, method = 'GET', body) {
-  const response = await fetch(API_BASE + path, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: body ? JSON.stringify(body) : undefined,
-  })
-  if (!response.ok) throw new Error('Erreur API ' + response.status)
+  let response
+  try {
+    response = await fetch(API_BASE + path, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
+    })
+  } catch {
+    throw new Error('Backend injoignable. Lancez « npm run backend:dev » à la racine du projet.')
+  }
+  if (!response.ok) {
+    const data = await response.json().catch(() => null)
+    throw new Error(data?.error?.message ?? 'Erreur API ' + response.status)
+  }
   return response.json()
 }
 
@@ -34,16 +43,6 @@ export const getAvailability = (weekStart) =>
 
 export const saveAvailability = (date, slot, status) =>
   call('/availability', 'PUT', { date, slot, status }, () => mock.setAvailability(date, slot, status))
-
-// Écran 2 — Shifts ouverts
-export const getOpenShifts = () =>
-  call('/shifts/open', 'GET', undefined, () => mock.getOpenShifts())
-
-export const acceptShift = (id) =>
-  call(`/shifts/${id}/accept`, 'POST', undefined, () => mock.answerShift(id, 'accepted'))
-
-export const refuseShift = (id) =>
-  call(`/shifts/${id}/refuse`, 'POST', undefined, () => mock.answerShift(id, 'refused'))
 
 // Écran 3 — Gains
 export const getEarnings = () =>
@@ -81,3 +80,28 @@ export const getTeam = () =>
 // Écran 7 — Gérant, paiements
 export const getPayments = () =>
   call('/payments', 'GET', undefined, () => mock.getPayments())
+
+// Flux "tout dans l'app" (backend Next.js, via le proxy /api) — jamais de données factices.
+// Voir API_CONTRACT.md.
+
+// Extra / employé
+export const getMyShifts = (employeeId) => request('/api/my-shifts?employee_id=' + employeeId)
+
+export const reportShift = (employeeId, shiftId, kind, eta) =>
+  request('/api/absences', 'POST', { employee_id: employeeId, shift_id: shiftId, kind, eta })
+
+export const getOpenShifts = (employeeId) => request('/api/shifts/open?employee_id=' + employeeId)
+
+export const acceptShift = (offerId, employeeId) =>
+  request(`/api/shifts/${offerId}/accept`, 'POST', { employee_id: employeeId })
+
+export const refuseShift = (offerId, employeeId) =>
+  request(`/api/shifts/${offerId}/refuse`, 'POST', { employee_id: employeeId })
+
+// Gérant
+export const getReports = () => request('/api/absences')
+export const findReplacement = (reportId) => request(`/api/absences/${reportId}/find-replacement`, 'POST')
+export const approveReplacement = (reportId) => request(`/api/absences/${reportId}/approve`, 'POST')
+export const rejectReplacement = (reportId) => request(`/api/absences/${reportId}/reject`, 'POST')
+export const getSettings = () => request('/api/settings')
+export const saveSettings = (settings) => request('/api/settings', 'PUT', settings)

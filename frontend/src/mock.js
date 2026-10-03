@@ -38,51 +38,6 @@ export function setAvailability(date, slot, status) {
   return { date, slot, status }
 }
 
-// ---------- Écran 2 : shifts ouverts ----------
-
-let openShifts = [
-  {
-    id: 'shift-1',
-    role: 'Bar',
-    restaurant: 'Chez Odile',
-    date: '2026-10-07',
-    start: '18:00',
-    end: '23:00',
-    hourly_rate: 16,
-    urgent: true,
-  },
-  {
-    id: 'shift-2',
-    role: 'Commis de cuisine',
-    restaurant: 'Chez Odile',
-    date: '2026-10-08',
-    start: '11:30',
-    end: '15:30',
-    hourly_rate: 15,
-    urgent: false,
-  },
-  {
-    id: 'shift-3',
-    role: 'Service en salle',
-    restaurant: 'Chez Odile',
-    date: '2026-10-10',
-    start: '18:30',
-    end: '23:30',
-    hourly_rate: 16.5,
-    urgent: false,
-  },
-]
-
-export function getOpenShifts() {
-  return openShifts
-}
-
-// Accepter ou refuser : dans les deux cas le shift disparaît de la liste
-export function answerShift(id, status) {
-  openShifts = openShifts.filter((shift) => shift.id !== id)
-  return { id, status }
-}
-
 // ---------- Écran 3 : gains ----------
 
 let withdrawn = false

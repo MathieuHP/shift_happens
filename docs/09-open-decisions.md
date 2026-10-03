@@ -4,7 +4,7 @@ Result of reviewing the backend against these docs. Each row: the question, what
 
 | # | Question | Decision | Status | Consequence |
 |---|---|---|---|---|
-| 1 | Autopilot or manager confirmation of the replacement | Recommended: autopilot for the demo, but make the code read `manager_confirmation_required` so the safe mode really exists (acceptance stays `accepted_pending_manager` until confirmed). Otherwise delete both flags. | open | Needs the whole team. Default until decided: autopilot. |
+| 1 | Autopilot or manager confirmation of the replacement | **Autopilot by default; the manager can switch on "confirm every replacement"** (setting `manager_approval_required`, a toggle in the manager screen). When on, an acceptance stays `pending_approval` until the manager confirms or rejects. | decided | Implemented: `backend/lib/inapp/service.ts`, `GET/PUT /api/settings`. |
 | 2 | Nobody accepts | Manager sees a clear "no replacement found" alert; case becomes `unresolved` and is flagged in the dashboard | decided | Dashboard alert, no silent state. |
 | 3 | Minimum rest between shifts | 11 h, stored as a restaurant parameter | assumed (read "on attend 11h" as "we use 11 h") | Rule must be checked in both directions (see bug 1). Validate against Belgian rules before any pilot. |
 | 4 | Entry channel (SMS / inbound call) | **Everything stays in the app.** No SMS, no phone calls for the hackathon build. | decided | Twilio/ElevenLabs code is out of the demo path. |
@@ -52,3 +52,8 @@ If a provider is unusable after its 1-hour spike, mock that adapter and keep the
 
 ## Before any pilot
 Contact consent and hours; recording/transcript notice, lawful basis and retention; labor rules; support ownership; real notification channel.
+
+## Implementation status (branch `backend-inapp-flow`)
+- Done: 11 h rest rule both directions; roles `salle/cuisine/bar`; contact consent; in-app report (absence/delay, idempotent); manager "find replacement"; in-app offers with single winner and ignored duplicates; "no replacement" alert; approval mode; `DEMO_SECRET` guard on `/api/demo/*`; front buttons and manager panel.
+- State lives **in memory** in the backend process (resets on restart; `POST /api/demo/reset` resets on demand). A Supabase version is not written yet; the legacy SMS/voice routes and `schema.sql` tables are untouched except roles and consent.
+- Not done: availability rule, "least recent offer" ordering (still `priority`), Stripe entitlement check, real authentication (anyone can call the in-app routes).

@@ -1,3 +1,4 @@
+import { checkDemoSecret } from "@/lib/security";
 import { z } from "zod";
 
 import { handleAbsenceMessage } from "@/lib/cascade/handleAbsenceMessage";
@@ -11,6 +12,9 @@ const demoAbsenceSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const denied = checkDemoSecret(request);
+  if (denied) return denied;
+
   try {
     const payload = demoAbsenceSchema.parse(await request.json().catch(() => ({})));
 

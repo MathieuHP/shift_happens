@@ -13,6 +13,7 @@ Run from the repo root:
 
 ```bash
 npm run backend:dev
+npm run backend:test
 npm run backend:lint
 npm run backend:build
 ```
@@ -22,6 +23,7 @@ Backend-specific setup lives in `backend/README.md`.
 ## Planning Docs
 
 Kash's planning package is preserved under `docs/`. The backend-specific adoption notes are in `docs/backend-execution-plan.md`.
+MVP test instructions are in `docs/mvp-testing.md`.
 
 ## Branching
 

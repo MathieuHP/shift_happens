@@ -5,6 +5,7 @@
   "scripts": {
     "backend:dev": "npm --prefix backend run dev",
     "backend:build": "npm --prefix backend run build",
-    "backend:lint": "npm --prefix backend run lint"
+    "backend:lint": "npm --prefix backend run lint",
+    "backend:test": "npm --prefix backend run test"
   }
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import logo from '../assets/logo-shift-happens.png'
 import { EMPLOYEES, getCurrentEmployeeId, setCurrentEmployeeId } from '../config'
 
 // Page d'accueil : pas d'authentification, on choisit juste son rôle.
@@ -16,7 +17,16 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col justify-center px-4">
-      <h1 className="font-titre text-4xl font-bold">Chez Odile</h1>
+      {/* Logo de l'app (carré vert foncé, texte rose) */}
+      <img
+        src={logo}
+        alt="Shift Happens"
+        width="176"
+        height="177"
+        className="mx-auto mb-8 h-44 w-44 rounded-[28px]"
+      />
+
+      <h1 className="font-titre text-4xl font-bold">Coli Brasserie</h1>
       <p className="mt-2 mb-8 text-secondaire">Qui êtes-vous ?</p>
 
       <div className="flex flex-col gap-3">

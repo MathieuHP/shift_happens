@@ -25,7 +25,7 @@ function fakeStripe(overrides: Record<string, unknown> = {}) {
     id: "sub_1",
     customer: "cus_1",
     status: "active",
-    metadata: { restaurant_id: "chez-odile" },
+    metadata: { restaurant_id: "coli-brasserie" },
     items: { data: [{ current_period_end: 1_800_000_000 }] },
   };
   return {
@@ -65,7 +65,7 @@ describe("createCheckoutSession", () => {
     expect(params).toMatchObject({
       mode: "subscription",
       line_items: [{ price: "price_50", quantity: 1 }],
-      client_reference_id: "chez-odile",
+      client_reference_id: "coli-brasserie",
       success_url: "http://front/gerant/paiements?checkout=success",
     });
     expect(params.integration_identifier).toMatch(/^shiftsaver-subscription-[a-z]{8}$/);
@@ -94,7 +94,7 @@ describe("handleStripeEvent", () => {
     const { client } = fakeStripe();
     await handleStripeEvent({ stripe: client, store }, event("evt_1", "checkout.session.completed", {
       mode: "subscription",
-      client_reference_id: "chez-odile",
+      client_reference_id: "coli-brasserie",
       subscription: "sub_1",
     }));
 
@@ -106,7 +106,7 @@ describe("handleStripeEvent", () => {
   it("ignores a replayed event: one effect only", async () => {
     const store = memoryStore();
     const { client } = fakeStripe();
-    const session = event("evt_1", "checkout.session.completed", { mode: "subscription", client_reference_id: "chez-odile", subscription: "sub_1" });
+    const session = event("evt_1", "checkout.session.completed", { mode: "subscription", client_reference_id: "coli-brasserie", subscription: "sub_1" });
 
     await handleStripeEvent({ stripe: client, store }, session);
     const replay = await handleStripeEvent({ stripe: client, store }, session);
@@ -154,7 +154,7 @@ describe("handleStripeEvent", () => {
     const { client } = fakeStripe({ subscriptions: { retrieve: vi.fn().mockRejectedValue(new Error("network")) } });
 
     await expect(
-      handleStripeEvent({ stripe: client, store }, event("evt_e", "checkout.session.completed", { mode: "subscription", client_reference_id: "chez-odile", subscription: "sub_1" })),
+      handleStripeEvent({ stripe: client, store }, event("evt_e", "checkout.session.completed", { mode: "subscription", client_reference_id: "coli-brasserie", subscription: "sub_1" })),
     ).rejects.toThrow("network");
     expect(store.state.processed_event_ids).toEqual([]); // pas marqué comme traité : Stripe réessaiera
   });

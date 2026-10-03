@@ -1,12 +1,14 @@
 // Tous les appels réseau de l'app passent par ce fichier.
-// - VITE_API_URL vide   -> on renvoie les données factices de mock.js
-// - VITE_API_URL rempli -> on appelle la vraie API FastAPI
+// - Flux "tout dans l'app", Stripe, démo « Remplacements » : toujours le vrai backend (fonction `request`).
+//   Adresse du backend : VITE_API_URL (en production) ; vide = même domaine / proxy Vite en local.
+// - Dispos, planning, équipe, « Ce soir » : données factices de mock.js (le backend n'a pas encore ces routes),
+//   quelle que soit la valeur de VITE_API_URL.
 //
 // Les routes et le format du JSON sont décrits dans API_CONTRACT.md.
 import * as mock from './mock.js'
 
-const API_URL = import.meta.env.VITE_API_URL
-const API_BASE = API_URL || ''
+// Adresse du backend. Vide = même domaine (proxy Vite en local, rewrites en production).
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -30,9 +32,10 @@ async function request(path, method = 'GET', body) {
   return response.json()
 }
 
-// Si on a une API : on l'appelle. Sinon : on attend un peu (comme un vrai serveur) puis on utilise le mock.
+// Écrans sans route backend : on attend un peu (comme un vrai serveur) puis on renvoie le mock.
+// Les arguments `path`, `method` et `body` gardent la forme de la future route (voir API_CONTRACT.md).
+// eslint-disable-next-line no-unused-vars
 async function call(path, method, body, mockFunction) {
-  if (API_URL) return request(path, method, body)
   await wait(250)
   return mockFunction()
 }

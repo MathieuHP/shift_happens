@@ -73,3 +73,11 @@ export const triggerDemoAbsence = () =>
   })
 
 export const triggerDemoNoShow = () => request('/api/demo/no-show', 'POST')
+
+// Écran 6 — Gérant, équipe
+export const getTeam = () =>
+  call('/team', 'GET', undefined, () => mock.getTeam())
+
+// Écran 7 — Gérant, paiements
+export const getPayments = () =>
+  call('/payments', 'GET', undefined, () => mock.getPayments())

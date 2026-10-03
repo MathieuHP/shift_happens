@@ -173,3 +173,35 @@ export function getPlanning(weekStart) {
     })),
   }
 }
+
+// ---------- Écran 6 : gérant, équipe ----------
+
+export function getTeam() {
+  return {
+    members: [
+      { id: 'e1', name: 'Inès', role: 'Salle', type: 'fixe', hourly_rate: 16 },
+      { id: 'e2', name: 'Tom', role: 'Salle', type: 'fixe', hourly_rate: 16 },
+      { id: 'e3', name: 'Lucie', role: 'Cuisine', type: 'fixe', hourly_rate: 17 },
+      { id: 'e4', name: 'Mehdi', role: 'Cuisine', type: 'fixe', hourly_rate: 16 },
+      { id: 'e5', name: 'Jade', role: 'Bar', type: 'fixe', hourly_rate: 16 },
+      { id: 'x1', name: 'Sacha', role: 'Salle', type: 'extra', hourly_rate: 16 },
+      { id: 'x2', name: 'Noor', role: 'Cuisine', type: 'extra', hourly_rate: 15 },
+      { id: 'x3', name: 'Eli', role: 'Bar', type: 'extra', hourly_rate: 15 },
+    ],
+  }
+}
+
+// ---------- Écran 7 : gérant, paiements ----------
+
+export function getPayments() {
+  // Les heures du service de midi sont "en attente" tant que le gérant n'a pas validé sur l'écran Ce soir
+  const validated = hoursStatus === 'paid'
+  return {
+    items: [
+      { id: 'p1', name: 'Sacha', label: 'Salle · service de midi', date: '2026-10-07', amount: 64, status: validated ? 'paid' : 'pending' },
+      { id: 'p2', name: 'Eli', label: 'Bar · service de midi', date: '2026-10-07', amount: 67.5, status: validated ? 'paid' : 'pending' },
+      { id: 'p3', name: 'Noor', label: 'Cuisine · service du soir', date: '2026-10-06', amount: 82.5, status: 'paid' },
+      { id: 'p4', name: 'Sacha', label: 'Salle · service du soir', date: '2026-10-06', amount: 80, status: 'paid' },
+    ],
+  }
+}

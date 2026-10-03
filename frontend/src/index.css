@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+/* Les couleurs et polices du projet. Elles deviennent des classes Tailwind :
+   --color-fond  ->  bg-fond, text-fond, border-fond ...
+   --font-titre  ->  font-titre                                          */
+@theme {
+  --color-fond: #f3f4ef;
+  --color-texte: #14201b;
+  --color-secondaire: #56615b;
+  --color-bordure: #dde0d8;
+
+  --color-vert: #0b6e4f;
+  --color-vert-clair: #cfe9dc;
+  --color-vert-texte: #0a4f39;
+
+  --color-orange: #b93a0a;
+  --color-orange-clair: #fce7da;
+  --color-orange-texte: #8a2b06;
+
+  --color-jaune-clair: #fbebc2;
+  --color-jaune-texte: #6b4a00;
+
+  --color-gris-clair: #e3e5df;
+  --color-gris-texte: #4d5751;
+
+  --font-titre: "Bricolage Grotesque", sans-serif;
+  --font-sans: "Instrument Sans", sans-serif;
+}
+
+body {
+  background-color: var(--color-fond);
+  color: var(--color-texte);
+  font-family: var(--font-sans);
+}

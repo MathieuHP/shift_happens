@@ -1,4 +1,4 @@
-export type EmployeeRole = "server" | "nurse" | "cashier" | "manager";
+export type EmployeeRole = "salle" | "cuisine" | "bar";
 
 export type ShiftStatus = "scheduled" | "vacant" | "covered" | "cancelled";
 
@@ -38,6 +38,7 @@ export type Employee = {
   skills: string[];
   active: boolean;
   priority: number;
+  contact_consent_at: string | null;
 };
 
 export type Shift = {

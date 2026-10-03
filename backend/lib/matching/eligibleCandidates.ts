@@ -18,6 +18,8 @@ export function getEligibleCandidates(input: {
   return input.employees
     .filter((employee) => employee.active)
     .filter((employee) => employee.id !== input.absentEmployeeId)
+    // Seuls les employés qui ont accepté d'être contactés reçoivent des offres.
+    .filter((employee) => employee.contact_consent_at !== null)
     .filter((employee) => {
       return (
         employee.role === input.shift.role ||

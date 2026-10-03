@@ -9,10 +9,11 @@ function employee(input: Partial<Employee> & Pick<Employee, "id" | "name">): Emp
   return {
     restaurant_account_id: restaurantId,
     phone: `+1555${input.id}`,
-    role: "server",
-    skills: ["server"],
+    role: "salle",
+    skills: ["salle"],
     active: true,
     priority: 50,
+    contact_consent_at: "2026-01-01T00:00:00.000Z",
     ...input,
   };
 }
@@ -21,8 +22,8 @@ function shift(input: Partial<Shift> & Pick<Shift, "id">): Shift {
   return {
     restaurant_account_id: restaurantId,
     employee_id: null,
-    role: "server",
-    skill_required: "server",
+    role: "salle",
+    skill_required: "salle",
     starts_at: "2026-10-04T08:00:00.000Z",
     ends_at: "2026-10-04T16:00:00.000Z",
     status: "scheduled",
@@ -125,6 +126,21 @@ describe("getEligibleCandidates", () => {
     });
 
     expect(candidates.map((candidate) => candidate.id)).toEqual(["just-enough"]);
+  });
+
+  it("excludes employees who have not consented to be contacted", () => {
+    const candidates = getEligibleCandidates({
+      absentEmployeeId: "absent",
+      shift: shift({ id: "target", employee_id: "absent" }),
+      employees: [
+        employee({ id: "absent", name: "Paul" }),
+        employee({ id: "no-consent", name: "No consent", contact_consent_at: null }),
+        employee({ id: "consented", name: "Consented" }),
+      ],
+      shifts: [],
+    });
+
+    expect(candidates.map((candidate) => candidate.id)).toEqual(["consented"]);
   });
 
   it("orders eligible employees by priority", () => {

@@ -31,10 +31,11 @@ create table if not exists employees (
   restaurant_account_id uuid not null references restaurant_accounts(id) on delete cascade,
   name text not null,
   phone text not null unique,
-  role text not null check (role in ('server', 'nurse', 'cashier', 'manager')),
+  role text not null check (role in ('salle', 'cuisine', 'bar')),
   skills text[] not null default '{}',
   active boolean not null default true,
   priority integer not null default 50,
+  contact_consent_at timestamptz,
   created_at timestamptz not null default now()
 );
 
@@ -43,7 +44,7 @@ create table if not exists shifts (
   restaurant_account_id uuid not null references restaurant_accounts(id) on delete cascade,
   employee_id uuid references employees(id) on delete set null,
   replacement_for_employee_id uuid references employees(id) on delete set null,
-  role text not null check (role in ('server', 'nurse', 'cashier', 'manager')),
+  role text not null check (role in ('salle', 'cuisine', 'bar')),
   skill_required text not null,
   starts_at timestamptz not null,
   ends_at timestamptz not null,

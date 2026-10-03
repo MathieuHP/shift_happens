@@ -51,6 +51,7 @@ export async function handleAbsenceMessage(input: {
   const { data: absenceCase, error: caseError } = await supabase
     .from("absence_cases")
     .insert({
+      restaurant_account_id: shift.restaurant_account_id,
       absent_employee_id: absentEmployee.id,
       shift_id: shift.id,
       status: "open",

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { getPlanning } from '../api'
 import Card from '../components/Card'
-import { formatDayShort, formatMoney, formatWeek } from '../format'
+import WeekNav from '../components/WeekNav'
+import { addDays, formatDayShort, formatMoney } from '../format'
 
-const WEEK_START = '2026-10-05'
+const FIRST_WEEK = '2026-10-05' // lundi de la semaine affichée au départ
 
 // Les 3 styles de pastille
 const PILL_STYLES = {
@@ -18,14 +19,31 @@ const ROWS = [
 ]
 
 export default function GerantPlanning() {
+  const [weekStart, setWeekStart] = useState(FIRST_WEEK)
   const [planning, setPlanning] = useState(null) // null = chargement
   const [error, setError] = useState('')
 
+  // Recharge le planning chaque fois qu'on change de semaine
   useEffect(() => {
-    getPlanning(WEEK_START)
-      .then(setPlanning)
-      .catch(() => setError('Impossible de charger le planning.'))
-  }, [])
+    let cancelled = false
+    getPlanning(weekStart)
+      .then((data) => {
+        if (!cancelled) setPlanning(data)
+      })
+      .catch(() => {
+        if (!cancelled) setError('Impossible de charger le planning.')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [weekStart])
+
+  // Changer de semaine : on vide l'écran (affiche "Chargement…") puis l'effet recharge
+  function changeWeek(days) {
+    setPlanning(null)
+    setError('')
+    setWeekStart(addDays(weekStart, days))
+  }
 
   if (error) return <p role="alert" className="text-orange">{error}</p>
   if (!planning) return <p className="text-secondaire">Chargement…</p>
@@ -40,7 +58,9 @@ export default function GerantPlanning() {
   return (
     <div>
       <h1 className="font-titre text-2xl font-bold">Planning de la semaine</h1>
-      <p className="text-secondaire">{formatWeek(planning.week_start)}</p>
+      <div className="mt-3 max-w-sm">
+        <WeekNav weekStart={weekStart} onChange={changeWeek} />
+      </div>
 
       {/* Trois indicateurs */}
       <div className="mt-4 grid gap-3 sm:grid-cols-3">

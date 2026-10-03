@@ -6,6 +6,24 @@ Tant que `VITE_API_URL` est vide dans `frontend/.env`, le front utilise `src/moc
 Conventions : dates `"AAAA-MM-JJ"`, heures `"HH:MM"`, montants en euros (nombre, ex. `82.5`). Pas d'authentification pour l'instant. Toute erreur = code HTTP ≠ 2xx (le front affiche un message générique).
 Le backend doit autoriser le CORS pour l'adresse du front (`http://localhost:5173`).
 
+For the current hackathon integration, Vite proxies `/api/*` to the Next backend at `http://localhost:3000`, so no browser CORS setup is needed during local development.
+
+---
+
+## Écran démo — Cascade ShiftSaver
+
+### `GET /api/demo/state`
+Returns the current manager dashboard state: `status`, `roster`, `schedule`, `currentCase`, `timeline`, `managerNotification`.
+
+### `POST /api/demo/absence`
+Triggers the autonomous replacement cascade.
+```json
+{ "fromPhone": "+15550001001", "body": "I am sick and cannot make my 8 AM shift" }
+```
+
+### `POST /api/demo/no-show`
+Triggers the automated no-show escalation: no check-in, one call to the scheduled employee, no answer, then replacement cascade.
+
 ---
 
 ## Écran 1 — Disponibilités de l'extra
@@ -120,7 +138,7 @@ Sans corps. Le front rappelle ensuite `GET /tonight` (le statut doit alors valoi
 
 ---
 
-## Écran 5 — Gérant : Planning de la semaine
+## Écran 5 — Gérant : Planning de la semaine (navigation de semaine incluse)
 
 ### `GET /planning?week_start=2026-10-05`
 Une pastille (`midi` / `soir`) : `kind` vaut `fixe` (employé fixe), `extra`, ou `a_pourvoir` (alors `name` est `null`).
@@ -142,6 +160,36 @@ Le front compte lui-même les shifts à pourvoir et les extras. Le coût de main
         { "name": null, "role": "Bar", "kind": "a_pourvoir" }
       ]
     }
+  ]
+}
+```
+
+---
+
+## Écran 6 — Gérant : Équipe
+
+### `GET /team`
+`type` : `fixe` ou `extra`.
+```json
+{
+  "members": [
+    { "id": "e1", "name": "Inès", "role": "Salle", "type": "fixe", "hourly_rate": 16 },
+    { "id": "x1", "name": "Sacha", "role": "Salle", "type": "extra", "hourly_rate": 16 }
+  ]
+}
+```
+
+---
+
+## Écran 7 — Gérant : Paiements
+
+### `GET /payments`
+`status` : `pending` (heures pas encore validées) ou `paid`. Après `POST /tonight/validate-hours`, les lignes concernées doivent passer à `paid`.
+```json
+{
+  "items": [
+    { "id": "p1", "name": "Sacha", "label": "Salle · service de midi", "date": "2026-10-07", "amount": 64, "status": "pending" },
+    { "id": "p3", "name": "Noor", "label": "Cuisine · service du soir", "date": "2026-10-06", "amount": 82.5, "status": "paid" }
   ]
 }
 ```

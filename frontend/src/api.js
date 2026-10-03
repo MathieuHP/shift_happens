@@ -6,12 +6,13 @@
 import * as mock from './mock.js'
 
 const API_URL = import.meta.env.VITE_API_URL
+const API_BASE = API_URL || ''
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // Appelle la vraie API et renvoie le JSON de la réponse.
 async function request(path, method = 'GET', body) {
-  const response = await fetch(API_URL + path, {
+  const response = await fetch(API_BASE + path, {
     method,
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
@@ -61,3 +62,22 @@ export const validateHours = () =>
 // Écran 5 — Gérant, planning
 export const getPlanning = (weekStart) =>
   call('/planning?week_start=' + weekStart, 'GET', undefined, () => mock.getPlanning(weekStart))
+
+// ShiftSaver live demo — always calls the backend/proxy, never mock data.
+export const getDemoState = () => request('/api/demo/state')
+
+export const triggerDemoAbsence = () =>
+  request('/api/demo/absence', 'POST', {
+    fromPhone: '+15550001001',
+    body: 'I am sick and cannot make my 8 AM shift',
+  })
+
+export const triggerDemoNoShow = () => request('/api/demo/no-show', 'POST')
+
+// Écran 6 — Gérant, équipe
+export const getTeam = () =>
+  call('/team', 'GET', undefined, () => mock.getTeam())
+
+// Écran 7 — Gérant, paiements
+export const getPayments = () =>
+  call('/payments', 'GET', undefined, () => mock.getPayments())

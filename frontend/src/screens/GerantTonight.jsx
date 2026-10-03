@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
-import { getTonight, validateHours } from '../api'
+import { getTonight } from '../api'
 import Badge from '../components/Badge'
-import Button from '../components/Button'
 import Card from '../components/Card'
-import Icon from '../components/Icon'
+import PayablesCard from '../components/PayablesCard'
 import ReportsPanel from '../components/ReportsPanel'
-import { formatDayLong, formatHours, formatMoney, formatRate } from '../format'
+import { formatDayLong } from '../format'
 
 // Statut d'un membre de l'équipe -> texte + couleur de l'étiquette
 const TEAM_STATUS = {
@@ -17,7 +16,6 @@ const TEAM_STATUS = {
 export default function GerantTonight() {
   const [tonight, setTonight] = useState(null) // null = chargement
   const [error, setError] = useState('')
-  const [paying, setPaying] = useState(false)
 
   useEffect(() => {
     getTonight()
@@ -25,22 +23,10 @@ export default function GerantTonight() {
       .catch(() => setError('Impossible de charger le service.'))
   }, [])
 
-  async function handleValidate() {
-    setPaying(true)
-    setError('')
-    try {
-      await validateHours()
-      setTonight(await getTonight()) // le statut passe à "paid"
-    } catch {
-      setError('Le paiement a échoué. Réessayez.')
-    }
-    setPaying(false)
-  }
-
   if (error && !tonight) return <p role="alert" className="text-orange">{error}</p>
   if (!tonight) return <p className="text-secondaire">Chargement…</p>
 
-  const { open_shift, team, hours_to_validate: hours } = tonight
+  const { open_shift, team } = tonight
 
   return (
     <div className="flex flex-col gap-4">
@@ -80,39 +66,10 @@ export default function GerantTonight() {
         </Card>
       </section>
 
-      {/* Heures à valider */}
+      {/* Heures à valider : paiements des shifts couverts (données du backend, virement Stripe en mode test) */}
       <section>
         <h2 className="mb-2 font-titre text-lg font-bold">Heures à valider</h2>
-        <Card>
-          <p className="text-sm text-secondaire">{hours.service}</p>
-          <ul className="mt-2 divide-y divide-bordure">
-            {hours.lines.map((line) => (
-              <li key={line.name} className="flex items-center justify-between py-2">
-                <span className="font-medium">{line.name}</span>
-                <span className="text-sm text-secondaire">
-                  {formatHours(line.hours)} × {formatRate(line.hourly_rate)} ={' '}
-                  <span className="font-semibold text-texte">{formatMoney(line.hours * line.hourly_rate)}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-2 flex items-end justify-between border-t border-bordure pt-3">
-            <p className="text-sm text-secondaire">Total</p>
-            <p className="font-titre text-3xl font-bold">{formatMoney(hours.total)}</p>
-          </div>
-
-          {hours.status === 'paid' ? (
-            <p role="status" className="mt-4 flex min-h-[44px] items-center justify-center gap-2 rounded-[14px] bg-vert-clair font-semibold text-vert-texte">
-              <Icon name="check" size={18} /> Payé
-            </p>
-          ) : (
-            <Button className="mt-4 w-full" disabled={paying} onClick={handleValidate}>
-              {paying ? 'Paiement…' : 'Valider et payer'}
-            </Button>
-          )}
-          {error && <p role="alert" className="mt-3 text-orange">{error}</p>}
-        </Card>
+        <PayablesCard />
       </section>
     </div>
   )

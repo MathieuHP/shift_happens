@@ -44,19 +44,9 @@ export const getAvailability = (weekStart) =>
 export const saveAvailability = (date, slot, status) =>
   call('/availability', 'PUT', { date, slot, status }, () => mock.setAvailability(date, slot, status))
 
-// Écran 3 — Gains
-export const getEarnings = () =>
-  call('/earnings', 'GET', undefined, () => mock.getEarnings())
-
-export const withdrawEarnings = () =>
-  call('/earnings/withdraw', 'POST', undefined, () => mock.withdrawEarnings())
-
 // Écran 4 — Gérant, ce soir
 export const getTonight = () =>
   call('/tonight', 'GET', undefined, () => mock.getTonight())
-
-export const validateHours = () =>
-  call('/tonight/validate-hours', 'POST', undefined, () => mock.validateHours())
 
 // Écran 5 — Gérant, planning
 export const getPlanning = (weekStart) =>
@@ -76,10 +66,6 @@ export const triggerDemoNoShow = () => request('/api/demo/no-show', 'POST')
 // Écran 6 — Gérant, équipe
 export const getTeam = () =>
   call('/team', 'GET', undefined, () => mock.getTeam())
-
-// Écran 7 — Gérant, paiements
-export const getPayments = () =>
-  call('/payments', 'GET', undefined, () => mock.getPayments())
 
 // Flux "tout dans l'app" (backend Next.js, via le proxy /api) — jamais de données factices.
 // Voir API_CONTRACT.md.
@@ -105,3 +91,16 @@ export const approveReplacement = (reportId) => request(`/api/absences/${reportI
 export const rejectReplacement = (reportId) => request(`/api/absences/${reportId}/reject`, 'POST')
 export const getSettings = () => request('/api/settings')
 export const saveSettings = (settings) => request('/api/settings', 'PUT', settings)
+
+// Abonnement du restaurant (Stripe Checkout, mode test)
+export const getBillingStatus = () => request('/api/billing/status')
+export const startCheckout = () => request('/api/billing/checkout', 'POST') // -> { url }
+export const openBillingPortal = () => request('/api/billing/portal', 'POST') // -> { url }
+
+// Paiement des shifts (Stripe Connect, mode test)
+export const getPayables = () => request('/api/payables')
+export const payAllPayables = () => request('/api/payables/pay-all', 'POST')
+export const getEarnings = (employeeId) => request('/api/earnings?employee_id=' + employeeId)
+export const getPayoutAccount = (employeeId) => request('/api/payout-account?employee_id=' + employeeId)
+export const startPayoutOnboarding = (employeeId, email) =>
+  request('/api/payout-account', 'POST', { employee_id: employeeId, email }) // -> { url }

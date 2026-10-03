@@ -14,6 +14,11 @@ export async function handle(run: () => Promise<unknown> | unknown): Promise<Res
     if (error instanceof ZodError) {
       return Response.json({ error: { code: "invalid_request", message: error.issues.map((i) => i.message).join(", ") } }, { status: 400 });
     }
+    // Erreur renvoyée par Stripe (clé invalide, fonds insuffisants…) : message lisible, code 502.
+    const stripeType = (error as { type?: unknown } | null)?.type;
+    if (error instanceof Error && (error.name.startsWith("Stripe") || (typeof stripeType === "string" && stripeType.startsWith("Stripe")))) {
+      return Response.json({ error: { code: "stripe_error", message: error.message } }, { status: 502 });
+    }
     console.error("Unexpected error", error);
     return Response.json({ error: { code: "server_error", message: "Erreur serveur." } }, { status: 500 });
   }

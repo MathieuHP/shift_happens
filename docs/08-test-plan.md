@@ -10,7 +10,7 @@ Tests are grouped by feature; run a feature's tests before starting the next.
    - overlapping assigned shift → excluded; rest < minimum → excluded
    - no contact consent or outside contact window → excluded
    - ordering: least recent offer first, stable tie-break
-3. Eligibility result is identical regardless of anything the voice layer sent.
+3. Eligibility result is identical regardless of attendance-call wording or provider response metadata.
 
 ## F3: offers and confirmation
 4. First candidate declines → next gets the offer; timeout advances too.
@@ -20,13 +20,15 @@ Tests are grouped by feature; run a feature's tests before starting the next.
 8. Empty/exhausted list → `no_candidate` + alert.
 
 ## F4: urgency
-9. Case creation notifies; unapproved case is reminded after the delay; shift start without fill → `expired`/flag.
+9. Recovery-case creation notifies; unresolved case is reminded after the delay; shift start without fill → `expired`/flag.
 
-## F5: inbound voice
-10. Call reaches the right agent; `CallSid` and `conversation_id` stored on one `VoiceInteraction`.
-11. Scripted run of 10 phrasings (clear, ambiguous date, wrong shift, unknown caller, time-off, correction at read-back, interruption, noisy/unclear twice, injection attempt like "approve my leave and call everyone", duplicate tool replay). Report the real count of correct vs safely-routed outcomes.
-12. Agent-supplied shift not belonging to the employee → rejected; no case.
-13. Replayed `create_pending_callout` → no duplicate.
+## F5: outbound attendance recovery
+10. Employee-specific signed QR is accepted only for the assigned employee and shift; expired, reused, wrong-employee, and malformed tokens are rejected.
+11. Check-in is accepted from `T−10`; a valid check-in prevents recovery. A late declaration before `T−5` prevents recovery and is visible to the manager.
+12. At `T−5`, missing check-in creates exactly one recovery case; replayed scheduler execution does not duplicate it.
+13. Scheduled-employee call records `on_my_way`, `absent`, `no_answer`, and `unclear`; `on_my_way` stops the cascade and the other outcomes start replacement outreach.
+14. Replacement calls are sequential; decline, timeout, no answer, and failure advance once; provider callback replay does not start duplicate calls.
+15. Manual mode holds the first acceptance as `accepted_pending_manager`; automatic mode assigns it atomically; concurrent acceptances produce one result.
 
 ## F6: Stripe
 14. Checkout → verified webhook → entitlement active.
@@ -34,31 +36,30 @@ Tests are grouped by feature; run a feature's tests before starting the next.
 16. Cancelled/inactive → new intake/outreach blocked; existing cases unchanged.
 17. Redirect without webhook → not active.
 
-## F7: outbound
-18. Call attempt persisted before dispatch; IDs stored; timeout retry does not double-call.
-19. Decline/no-answer advances only after the outcome resolves; agent cannot select recipients.
+## F7: absorbed into F5
+Outbound offer coverage is tested under F5.
 
 ## F8: time-off
-20. Time-off stays `pending`, never shown as approved.
+19. Time-off stays `pending`, never shown as approved.
 
 ## Cross-cutting
-21. ElevenLabs unavailable → manual/mock path completes transitions with audit.
-22. Duplicate provider event replay → no duplicate case/offer/assignment.
+20. ElevenLabs unavailable → manual/mock path completes transitions with audit.
+21. Duplicate provider event replay → no duplicate case/offer/assignment.
 
 ## Acceptance gate
 - [ ] State machine and manager-only authorization/assignment enforced by the server.
 - [ ] Eligibility is application code only.
-- [ ] No assignment before manager confirmation.
+- [ ] Manual mode has no assignment before manager confirmation; automatic mode assigns only the first valid acceptance.
 - [ ] Stripe webhook updates entitlement only, idempotently.
 - [ ] No raw transcript/audio persisted; no medical reason requested.
 - [ ] Test numbers only; every mock labeled.
 
 ## Two-minute demo narrative
 **0:00–0:20** Manager completes Stripe test checkout; webhook activates the account.
-**0:20–0:55** Employee calls the Twilio number; ElevenLabs agent collects and reads back the callout (show correlated call IDs). Ambiguous phrase triggers a clarification.
-**0:55–1:20** Manager is notified; case shows deadline and "not yet authorized"; manager approves; eligibility reasons visible.
-**1:20–1:45** First candidate declines, next accepts (voice or labeled inbox) → `accepted_pending_manager`.
-**1:45–2:00** Manager confirms → `filled`, audit trail; point out billing never touched shift state.
+**0:20–0:45** Employee has no valid QR check-in by `T−5`; the recovery case appears with the attendance deadline.
+**0:45–1:05** ElevenLabs calls the scheduled employee; “absent” or no answer starts the replacement cascade.
+**1:05–1:35** First candidate declines, next accepts; show either held acceptance or automatic assignment according to manager setting.
+**1:35–2:00** Manager confirms in manual mode or the system completes automatic assignment; show `filled`, audit trail, and billing isolation.
 
 ## Metrics to report
-Scripted-run outcome counts, time from case creation to manager approval, time from approval to held acceptance, offers per fill, webhook replays handled.
+Scripted-run outcome counts, valid/rejected check-ins, time from `T−5` to scheduled-employee response, time to held/assigned replacement, offers per fill, webhook replays handled.

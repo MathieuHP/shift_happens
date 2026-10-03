@@ -2,7 +2,12 @@
   "name": "shiftsaver",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "scripts": {
+    "setup": "npm install",
     "backend:dev": "npm --prefix backend run dev",
     "backend:build": "npm --prefix backend run build",
     "backend:lint": "npm --prefix backend run lint",

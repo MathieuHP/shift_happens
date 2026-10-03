@@ -24,12 +24,12 @@ npm run backend:dev
 curl http://localhost:3000/api/health
 ```
 
-3. Trigger the absence cascade without waiting for a real SMS:
+3. Trigger the attendance-recovery demo without waiting for a real scanner or phone call:
 
 ```bash
 curl -X POST http://localhost:3000/api/demo/absence \
   -H "Content-Type: application/json" \
-  -d '{"fromPhone":"+15550001001","body":"I am sick and cannot make my 8 AM shift"}'
+  -d '{"shiftId":"<seeded-shift-id>","mode":"missing-check-in"}'
 ```
 
 4. Fetch the current dashboard state without retriggering the cascade:
@@ -38,7 +38,7 @@ curl -X POST http://localhost:3000/api/demo/absence \
 curl http://localhost:3000/api/demo/state
 ```
 
-If Supabase env vars are missing, this endpoint returns a deterministic simulated cascade. That is intentional so the MVP can be tested immediately.
+If Supabase env vars are missing, the demo should use a deterministic simulated attendance trigger and cascade. That is intentional so the MVP can be tested immediately without external providers.
 
 ## Live Supabase Setup
 
@@ -49,13 +49,13 @@ If Supabase env vars are missing, this endpoint returns a deterministic simulate
 
 ## Expected Supabase State In Live Mode
 
-- `absence_cases`: one new case for Paul.
-- `shifts`: Paul's shift becomes `vacant`, or later `covered` after acceptance.
-- `call_attempts`: one attempt for the first eligible candidate.
-- `events`: timeline entries for absence, vacancy, candidates, and call start.
+- `shift_check_ins`: no valid check-in for the seeded employee/shift.
+- `attendance_recovery_cases`: one new case at the `T−5` checkpoint.
+- `call_attempts`: one attendance-check attempt, followed by one replacement attempt after `absent` or no answer.
+- `events`: timeline entries for missing check-in, scheduled-employee response, candidate order, and call start.
 - `audit_events`: reserved for the next hardening pass.
 
-If Twilio env vars are missing, the backend records `demo_call_skipped`; this is expected and keeps the live Supabase path testable without real calls.
+If Twilio env vars are missing, the backend records a labeled demo-call skip; this is expected and keeps the attendance and cascade path testable without real calls.
 
 ## In-app flow (absence → replacement)
 

@@ -7,6 +7,16 @@ Autonomous HR assistant prototype for last-minute shift absences.
 - `backend/`: Next.js API backend, Twilio webhooks, Supabase schema, matching, and call cascade logic.
 - `frontend/`: Vite + React + Tailwind mobile web app (extra and manager screens). Runs on mock data until the API is wired; see `frontend/API_CONTRACT.md`.
 
+## First Setup
+
+After cloning or pulling new dependencies, install from the repo root:
+
+```bash
+npm install
+```
+
+This repo uses npm workspaces, so the root install installs both `backend/` and `frontend/` dependencies. If you see `next: not found`, dependencies were not installed.
+
 ## Backend Commands
 
 Run from the repo root:

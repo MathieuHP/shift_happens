@@ -2,20 +2,17 @@
 
 Everything here is deliberately outside `02-mvp-requirements.md`. Nothing in this file should leak into the MVP demo, tests or data model. Full earlier detail (tools, entities, test cases) remains in git history before the "MVP-only" restructuring.
 
-## Phase 1 — Lateness and no-show escalation
-- Employee reports an expected delay in the app (optional ETA, no reason asked). Manager is alerted; no replacement outreach starts by itself.
-- Check-in opens at `T−10` (`shift_start − 10 min`). If there is neither a delay notice nor a valid check-in at `T−5`, ElevenLabs calls the scheduled employee **once**.
-  - "On my way" / valid ETA → stop; show self-reported status to manager.
-  - Absence confirmed or no answer → sequential calls to replacements, **only** if the restaurant enabled the policy and a manager pre-authorized contact window, candidate rules and fallback. Disabled by default.
-  - Replacement acceptance is still `accepted_pending_manager`; the manager confirms.
-- QR/app check-in records operational arrival time (signed/rotating token, location + shift window, duplicate key). It is not proof of worked hours or payroll data.
-- Owner attendance dashboard: scheduled start/end/duration, checked in, manager-confirmed attendance, late (first check-in > start + configured grace), minutes late (floored at 0), absence-confirmed vs no-response shown separately. "Evidence confidence" = source quality only (high: validated QR/app; medium: self-report or manager correction; low: none). Never a worker score, ranking or discipline input.
+## Phase 1 — Broader attendance analytics
+The minimum QR check-in and outbound recovery flow is now part of the MVP. This roadmap phase covers only the broader attendance dashboard and policy work beyond that MVP:
+- Owner attendance dashboard with scheduled start/end/duration, manager-confirmed attendance, lateness metrics, and absence-confirmed versus no-response views.
+- Evidence-confidence display as source quality only; never a worker score, ranking, or discipline input.
+- Broader delay policies, correction workflows, retention rules, and legal review.
 - **Gate before building:** Belgian workplace-monitoring/data-protection review, employee notice, retention and correction process, call consent/contact hours.
 
 ## Phase 2 — Availability and schedule drafting
 - Employees submit availability and date-bounded time-off requests for a planning period.
 - Deterministic draft from role/skill, availability, rest/overlap and coverage rules; uncovered shifts stay visible, nothing is invented.
-- Manager edits, decides every leave request explicitly, then publishes (audited). Later changes go through tracked manager actions; callout flow stays the urgent path.
+- Manager edits, decides every leave request explicitly, then publishes (audited). Later changes go through tracked manager actions; attendance recovery remains the urgent path.
 - **Gate:** define period, deadlines, rest rules, fairness constraints, handling of incomplete submissions.
 
 ## Parked — accelerated worker pay (formerly Phase 3)

@@ -1,30 +1,24 @@
-# ShiftSaver Backend
+# ShiftSaver
 
 Autonomous HR assistant prototype for last-minute shift absences.
 
-## Backend Endpoints
+## Repository Layout
 
-- `POST /api/sms/inbound`: Twilio inbound SMS webhook.
-- `POST /api/demo/absence`: Local/demo trigger for the same absence flow.
-- `GET /api/voice/twiml?attemptId=...`: Twilio voice prompt.
-- `POST /api/voice/response?attemptId=...`: Accept/decline handler from speech or keypad.
-- `POST /api/voice/status?attemptId=...`: No-answer/failure cascade handler.
+- `backend/`: Next.js API backend, Twilio webhooks, Supabase schema, matching, and call cascade logic.
+- `frontend/`: Reserved for the manager dashboard team.
 
-## Setup
+## Backend Commands
 
-1. Copy `.env.example` into `.env.local`.
-2. Create a Supabase project.
-3. Run `supabase/schema.sql` in the SQL editor.
-4. Run `supabase/seed.sql` for demo data.
-5. Configure Twilio SMS webhook to `/api/sms/inbound`.
-6. Configure `NEXT_PUBLIC_APP_URL` to your Vercel or ngrok URL.
-
-## Demo Trigger
+Run from the repo root:
 
 ```bash
-curl -X POST http://localhost:3000/api/demo/absence \
-  -H "Content-Type: application/json" \
-  -d '{"fromPhone":"+15550001001","body":"I am sick and cannot make my 8 AM shift"}'
+npm run backend:dev
+npm run backend:lint
+npm run backend:build
 ```
 
-If Twilio env vars are missing, the backend writes a `demo_call_skipped` event instead of placing a real call.
+Backend-specific setup lives in `backend/README.md`.
+
+## Branching
+
+Do not work directly on `main`. Backend work should happen on `backend-shiftsaver` or smaller backend feature branches.

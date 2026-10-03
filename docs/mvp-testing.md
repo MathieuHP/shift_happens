@@ -80,6 +80,7 @@ Scénario : toute l'équipe fixe est en poste ce soir, seuls Kash et Mathieu son
 1. Lancer le backend et le front, ouvrir « Je suis gérant » → onglet **Remplacements**.
 2. Cliquer **Simuler un no-show** : Jade n'a pas pointé (son shift commence dans 5 minutes). Kash passe en « Appel en cours », Mathieu « En file ».
 3. Pour simuler leurs réponses sans l'appel vocal : `curl "$B/shifts/open?employee_id=kash"` puis `POST $B/shifts/<offer_id>/refuse` (ou `/accept`) avec `{"employee_id":"kash"}`. Refus de Kash → Mathieu est appelé ; acceptation → « Couvert ».
-4. **Réinitialiser la démo** pour recommencer. Les horaires sont en heure de Bruxelles (`RESTAURANT_TIMEZONE`).
+4. **Sans réponse pendant 30 s** (`CALL_TIMEOUT_SECONDS`), on passe au suivant : Kash « Sans réponse », puis Mathieu appelé ; si lui non plus ne répond pas, alerte pour le gérant. Un compte à rebours s'affiche à côté de la personne appelée. Pour tester vite : `CALL_TIMEOUT_SECONDS=6 npm run backend:dev`.
+5. **Réinitialiser la démo** pour recommencer. Les horaires sont en heure de Bruxelles (`RESTAURANT_TIMEZONE`).
 
 Les appels vocaux automatiques ne sont pas encore branchés : l'ordre d'appel est déjà décidé par le serveur (Kash, puis Mathieu), il suffira de lancer les appels dans cet ordre.

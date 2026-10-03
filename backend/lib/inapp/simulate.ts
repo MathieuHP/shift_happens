@@ -1,7 +1,7 @@
 // Démo "cascade" : toute l'équipe fixe est en poste ce soir, seuls Kash et Mathieu sont disponibles comme extras.
 // Un déclenchement (no-show ou absence signalée par SMS) lance la recherche de remplaçant tout de suite,
 // comme si le gérant avait autorisé la recherche à l'avance (autopilot).
-import { findReplacement, reportShift } from "./service";
+import { callTimeoutSeconds, findReplacement, reportShift } from "./service";
 import { anchorTonightService, getAppState, resetAppState, TONIGHT_SHIFT_PREFIX } from "./state";
 import type { AppState, ReportKind, ShiftReport } from "./types";
 
@@ -22,6 +22,7 @@ export function startDemoIncident(kind: Extract<ReportKind, "no_show" | "absence
   anchorTonightService(state.shifts, now);
 
   const { report } = reportShift(state, { employeeId: "jade", shiftId: `${TONIGHT_SHIFT_PREFIX}jade`, kind }, now);
-  findReplacement(state, report.id, now); // les offres partent dans l'ordre : Kash, puis Mathieu
+  // Les offres partent dans l'ordre : Kash, puis Mathieu. Sans réponse après le délai (30 s), on passe au suivant.
+  findReplacement(state, report.id, now, { callTimeoutSeconds: callTimeoutSeconds() });
   return { report, started: true };
 }

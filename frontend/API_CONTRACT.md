@@ -33,9 +33,11 @@ Toute l'équipe fixe est en poste ce soir ; Kash et Mathieu sont les seuls extra
   ]
 }
 ```
-`timeline[].at` : instant exact (ISO) ; `timeline[].time` : heure du restaurant avec secondes. Types : `no_show_detected`, `absence_reported`, `search_started`, `call_started` (« Appel de Kash… », un par candidat, dans l'ordre), `offer_declined`, `replacement_accepted`, `case_resolved`, `no_replacement`.
+`timeline[].at` : instant exact (ISO) ; `timeline[].time` : heure du restaurant avec secondes. Types : `no_show_detected`, `absence_reported`, `search_started`, `call_started` (« Appel de Kash… », un par candidat, dans l'ordre), `call_no_answer`, `offer_declined`, `replacement_accepted`, `case_resolved`, `no_replacement`.
 
-`roster[].status` : `scheduled` (en poste), `available` (extra disponible), `queued` (dans la file), `called` (appelé en ce moment), `declined`, `accepted`, `absent`. `status` global : `idle`, `calling`, `resolved`. `schedule[].status` : `scheduled`, `vacant`, `covered`.
+`roster[].status` : `scheduled` (en poste), `available` (extra disponible), `queued` (dans la file), `called` (appelé en ce moment ; `callExpiresAt` donne l'instant où l'appel expire), `no_answer` (pas de réponse au bout du délai), `declined`, `accepted`, `absent`.
+
+**Délai d'appel** : sans réponse après `CALL_TIMEOUT_SECONDS` (30 s par défaut), on passe au candidat suivant (événements `call_no_answer` puis `call_started`) ; si le dernier ne répond pas non plus, le gérant est alerté (`no_replacement`). Le délai est vérifié à chaque lecture de l'état. Il s'applique à la démo « Remplacements » ; la recherche lancée par le gérant n'a pas de minuterie. `status` global : `idle`, `calling`, `resolved`. `schedule[].status` : `scheduled`, `vacant`, `covered`.
 
 ### `POST /api/demo/no-show`
 Simule : Jade n'a pas pointé 5 minutes avant son shift. Renvoie `{ "started": true|false, …état comme ci-dessus }`. Un second clic pendant l'incident ne crée rien (`started: false`). Quand l'incident est fini, un nouveau clic repart d'un état propre.

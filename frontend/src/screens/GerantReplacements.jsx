@@ -11,6 +11,7 @@ const ROSTER_STATUS = {
   available: { label: 'Disponible', color: 'vert' },
   queued: { label: 'En file', color: 'gris' },
   called: { label: 'Appel en cours', color: 'jaune' },
+  no_answer: { label: 'Sans réponse', color: 'orange' },
   declined: { label: 'A refusé', color: 'gris' },
   accepted: { label: 'A accepté', color: 'vert' },
   absent: { label: 'Absent', color: 'orange' },
@@ -22,6 +23,7 @@ const EVENT_LABEL = {
   absence_reported: 'Absence',
   search_started: 'Recherche',
   call_started: 'Appel',
+  call_no_answer: 'Sans réponse',
   offer_declined: 'Refus',
   replacement_accepted: 'Accepté',
   case_resolved: 'Résolu',
@@ -36,6 +38,8 @@ export default function GerantReplacements() {
   const [busy, setBusy] = useState(false)
   const [lastAction, setLastAction] = useState('')
   const [reloadKey, setReloadKey] = useState(0)
+  const [clock, setClock] = useState(() => Date.now()) // heure du navigateur, rafraîchie chaque seconde pour le compte à rebours
+  const [serverOffset, setServerOffset] = useState(0) // écart entre l'horloge du serveur et celle du navigateur
 
   // Charge l'état, puis le rafraîchit toutes les 3 secondes pour suivre les réponses en direct
   useEffect(() => {
@@ -44,6 +48,8 @@ export default function GerantReplacements() {
       try {
         const data = await getDemoState()
         if (cancelled) return
+        setServerOffset(Date.parse(data.updatedAt) - Date.now())
+        setClock(Date.now())
         setState(data)
         setError('')
       } catch {
@@ -57,6 +63,19 @@ export default function GerantReplacements() {
       clearInterval(timer)
     }
   }, [reloadKey])
+
+  // Compte à rebours de l'appel en cours : on corrige l'horloge du navigateur avec celle du serveur
+  const someoneIsCalled = state?.roster.some((employee) => employee.callExpiresAt)
+  useEffect(() => {
+    if (!someoneIsCalled) return undefined
+    const timer = setInterval(() => setClock(Date.now()), 1000)
+    return () => clearInterval(timer)
+  }, [someoneIsCalled])
+
+  function secondsLeft(employee) {
+    if (!employee.callExpiresAt) return null
+    return Math.max(0, Math.ceil((Date.parse(employee.callExpiresAt) - (clock + serverOffset)) / 1000))
+  }
 
   async function run(action, message) {
     setBusy(true)
@@ -152,6 +171,7 @@ export default function GerantReplacements() {
                   </div>
                   <Badge color={ROSTER_STATUS[employee.status]?.color ?? 'gris'}>
                     {ROSTER_STATUS[employee.status]?.label ?? employee.status}
+                    {secondsLeft(employee) !== null && ` · ${secondsLeft(employee)} s`}
                   </Badge>
                 </div>
               ))}

@@ -14,7 +14,8 @@ export type CallAttemptStatus =
   | "accepted"
   | "declined"
   | "no_answer"
-  | "failed";
+  | "failed"
+  | "completed";
 
 export type EventType =
   | "absence_reported"
@@ -69,6 +70,7 @@ export type CallAttempt = {
   absence_case_id: string;
   employee_id: string;
   status: CallAttemptStatus;
+  /** Unique per case/candidate; nullable only for attempts created by older app versions. */
   idempotency_key: string | null;
   twilio_call_sid: string | null;
   voice_provider: string;

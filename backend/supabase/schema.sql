@@ -70,7 +70,7 @@ create table if not exists call_attempts (
   absence_case_id uuid not null references absence_cases(id) on delete cascade,
   employee_id uuid not null references employees(id) on delete cascade,
   idempotency_key text,
-  status text not null default 'queued' check (status in ('queued', 'calling', 'accepted', 'declined', 'no_answer', 'failed')),
+  status text not null default 'queued' check (status in ('queued', 'calling', 'accepted', 'declined', 'no_answer', 'failed', 'completed')),
   twilio_call_sid text,
   voice_provider text not null default 'twilio',
   voice_conversation_id text,
@@ -79,6 +79,16 @@ create table if not exists call_attempts (
   updated_at timestamptz not null default now(),
   unique (idempotency_key)
 );
+
+-- Keep existing installations compatible while extending the attempt lifecycle.
+alter table call_attempts drop constraint if exists call_attempts_status_check;
+alter table call_attempts add constraint call_attempts_status_check
+  check (status in ('queued', 'calling', 'accepted', 'declined', 'no_answer', 'failed', 'completed'));
+
+-- A case can have at most one active outbound attempt at a time.
+create unique index if not exists call_attempts_one_active_per_case_idx
+  on call_attempts(absence_case_id)
+  where status = 'calling';
 
 create table if not exists voice_interactions (
   id uuid primary key default gen_random_uuid(),

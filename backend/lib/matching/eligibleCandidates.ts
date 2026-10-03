@@ -2,7 +2,9 @@ import { addHours, areIntervalsOverlapping, parseISO } from "date-fns";
 
 import type { Candidate, Employee, Shift } from "@/lib/types";
 
-const MIN_REST_HOURS = 8;
+// Repos minimum entre deux shifts (décision du 2026-10-03, voir docs/09-open-decisions.md).
+// À terme : paramètre du restaurant.
+const MIN_REST_HOURS = 11;
 
 export function getEligibleCandidates(input: {
   employees: Employee[];
@@ -38,15 +40,17 @@ export function getEligibleCandidates(input: {
         return false;
       }
 
+      // Le repos compte dans les deux sens : après un shift précédent, et avant un shift suivant.
       return assignedShifts.every((shift) => {
-        const shiftEnd = parseISO(shift.ends_at);
-        return addHours(shiftEnd, MIN_REST_HOURS) <= targetStart;
+        const restedBefore = addHours(parseISO(shift.ends_at), MIN_REST_HOURS) <= targetStart;
+        const restedAfter = addHours(targetEnd, MIN_REST_HOURS) <= parseISO(shift.starts_at);
+        return restedBefore || restedAfter;
       });
     })
     .map<Candidate>((employee) => ({
       ...employee,
       score: 100 - employee.priority,
-      reason: "Matching role/skill, no overlap, legal rest window satisfied",
+      reason: "Matching role/skill, no overlap, 11 h rest before and after satisfied",
     }))
     .sort((a, b) => b.score - a.score);
 }

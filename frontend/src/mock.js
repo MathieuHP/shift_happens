@@ -38,44 +38,9 @@ export function setAvailability(date, slot, status) {
   return { date, slot, status }
 }
 
-// ---------- Écran 3 : gains ----------
-
-let withdrawn = false
-
-const earningItems = [
-  { id: 'g1', type: 'shift', label: 'Salle · Chez Odile', date: '2026-10-05', amount: 80, status: 'paid' },
-  { id: 'g2', type: 'shift', label: 'Bar · Chez Odile', date: '2026-10-06', amount: 82.5, status: 'paid' },
-  { id: 'g3', type: 'tip', label: 'Pourboires du 6 oct.', date: '2026-10-06', amount: 18.4, status: 'paid' },
-  { id: 'g4', type: 'shift', label: 'Bar · Chez Odile', date: '2026-10-07', amount: 80, status: 'upcoming' },
-  { id: 'g5', type: 'shift', label: 'Salle · Chez Odile', date: '2026-10-10', amount: 82.5, status: 'upcoming' },
-]
-
-export function getEarnings() {
-  const paid = earningItems.filter((item) => item.status === 'paid')
-  const total = paid.reduce((sum, item) => sum + item.amount, 0)
-  const last = paid[paid.length - 1]
-  return {
-    week_total: withdrawn ? 0 : total,
-    withdrawn,
-    last_payment: { amount: last.amount, date: last.date },
-    items: earningItems,
-  }
-}
-
-export function withdrawEarnings() {
-  withdrawn = true
-  return { status: 'requested' }
-}
-
 // ---------- Écran 4 : gérant, ce soir ----------
 
-let hoursStatus = 'to_validate'
-
 export function getTonight() {
-  const lines = [
-    { name: 'Sacha', hours: 4, hourly_rate: 16 },
-    { name: 'Eli', hours: 4.5, hourly_rate: 15 },
-  ]
   return {
     date: '2026-10-07',
     open_shift: { role: 'Bar', start: '19:00', end: '23:00', contacted_count: 2 },
@@ -86,18 +51,7 @@ export function getTonight() {
       { name: 'Mehdi', role: 'Cuisine', status: 'late' },
       { name: 'Jade', role: 'Bar', status: 'absent' },
     ],
-    hours_to_validate: {
-      service: 'Service de midi',
-      status: hoursStatus,
-      lines,
-      total: lines.reduce((sum, line) => sum + line.hours * line.hourly_rate, 0),
-    },
   }
-}
-
-export function validateHours() {
-  hoursStatus = 'paid'
-  return { status: 'paid' }
 }
 
 // ---------- Écran 5 : gérant, planning de la semaine ----------
@@ -142,21 +96,6 @@ export function getTeam() {
       { id: 'x1', name: 'Sacha', role: 'Salle', type: 'extra', hourly_rate: 16 },
       { id: 'x2', name: 'Noor', role: 'Cuisine', type: 'extra', hourly_rate: 15 },
       { id: 'x3', name: 'Eli', role: 'Bar', type: 'extra', hourly_rate: 15 },
-    ],
-  }
-}
-
-// ---------- Écran 7 : gérant, paiements ----------
-
-export function getPayments() {
-  // Les heures du service de midi sont "en attente" tant que le gérant n'a pas validé sur l'écran Ce soir
-  const validated = hoursStatus === 'paid'
-  return {
-    items: [
-      { id: 'p1', name: 'Sacha', label: 'Salle · service de midi', date: '2026-10-07', amount: 64, status: validated ? 'paid' : 'pending' },
-      { id: 'p2', name: 'Eli', label: 'Bar · service de midi', date: '2026-10-07', amount: 67.5, status: validated ? 'paid' : 'pending' },
-      { id: 'p3', name: 'Noor', label: 'Cuisine · service du soir', date: '2026-10-06', amount: 82.5, status: 'paid' },
-      { id: 'p4', name: 'Sacha', label: 'Salle · service du soir', date: '2026-10-06', amount: 80, status: 'paid' },
     ],
   }
 }

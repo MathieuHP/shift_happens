@@ -124,36 +124,10 @@ Protégé par l'en-tête `x-demo-secret` si `DEMO_SECRET` est défini côté bac
 
 ---
 
-## Écran 3 — Gains (extra)
-
-### `GET /earnings`
-`items[].type` : `shift` ou `tip`. `items[].status` : `paid` ou `upcoming`.
-`week_total` = total déjà reçu cette semaine (peut valoir 0 après un retrait).
-```json
-{
-  "week_total": 180.9,
-  "withdrawn": false,
-  "last_payment": { "amount": 18.4, "date": "2026-10-06" },
-  "items": [
-    { "id": "g1", "type": "shift", "label": "Salle · Chez Odile", "date": "2026-10-05", "amount": 80, "status": "paid" },
-    { "id": "g3", "type": "tip", "label": "Pourboires du 6 oct.", "date": "2026-10-06", "amount": 18.4, "status": "paid" },
-    { "id": "g4", "type": "shift", "label": "Bar · Chez Odile", "date": "2026-10-07", "amount": 80, "status": "upcoming" }
-  ]
-}
-```
-
-### `POST /earnings/withdraw` — « Retirer vers mon compte »
-Sans corps. Le front rappelle ensuite `GET /earnings`.
-```json
-{ "status": "requested" }
-```
-
----
-
 ## Écran 4 — Gérant : Ce soir
 
 ### `GET /tonight`
-`team[].status` : `present`, `late` ou `absent`. `hours_to_validate.status` : `to_validate` ou `paid`.
+`team[].status` : `present`, `late` ou `absent`. (Les heures à valider viennent maintenant de `GET /api/payables`.)
 ```json
 {
   "date": "2026-10-07",
@@ -162,23 +136,8 @@ Sans corps. Le front rappelle ensuite `GET /earnings`.
     { "name": "Inès", "role": "Salle", "status": "present" },
     { "name": "Mehdi", "role": "Cuisine", "status": "late" },
     { "name": "Jade", "role": "Bar", "status": "absent" }
-  ],
-  "hours_to_validate": {
-    "service": "Service de midi",
-    "status": "to_validate",
-    "lines": [
-      { "name": "Sacha", "hours": 4, "hourly_rate": 16 },
-      { "name": "Eli", "hours": 4.5, "hourly_rate": 15 }
-    ],
-    "total": 131.5
-  }
+  ]
 }
-```
-
-### `POST /tonight/validate-hours` — « Valider et payer »
-Sans corps. Le front rappelle ensuite `GET /tonight` (le statut doit alors valoir `paid`).
-```json
-{ "status": "paid" }
 ```
 
 ---
@@ -226,15 +185,31 @@ Le front compte lui-même les shifts à pourvoir et les extras. Le coût de main
 
 ---
 
-## Écran 7 — Gérant : Paiements
+---
 
-### `GET /payments`
-`status` : `pending` (heures pas encore validées) ou `paid`. Après `POST /tonight/validate-hours`, les lignes concernées doivent passer à `paid`.
+## Stripe : abonnement et paiement des shifts (backend réel, mode test)
+
+Voir `docs/stripe-setup.md` pour la mise en place. Toutes ces routes sont dans `backend/app/api/`.
+
+### Abonnement du restaurant (50 €/mois)
+- `GET /api/billing/status` → `{ "status": "inactive|trialing|active|past_due|canceled", "entitled": true, "current_period_end": "2026-11-03T13:39:37.000Z", "has_customer": true }`. Mis à jour **uniquement** par les webhooks Stripe (le retour de la page de paiement n'active rien).
+- `POST /api/billing/checkout` → `{ "url": "https://checkout.stripe.com/…" }` (le front redirige). Erreur `already_subscribed` (409) si déjà actif.
+- `POST /api/billing/portal` → `{ "url": "https://billing.stripe.com/…" }` (gérer / annuler). Erreur `no_customer` (409) avant le premier abonnement.
+- `POST /api/billing/webhook` : appelé par Stripe (signature `stripe-signature` vérifiée), pas par le front.
+- Si `REQUIRE_SUBSCRIPTION=true` : `POST /api/absences` et `POST /api/absences/{id}/find-replacement` répondent **402** `entitlement_inactive` tant que l'abonnement n'est pas actif.
+
+### Paiement des shifts
+`status` : `to_validate`, `processing`, `paid`, `reversed`. Une ligne est créée pour chaque shift couvert par un remplaçant.
+- `GET /api/payables`
 ```json
-{
-  "items": [
-    { "id": "p1", "name": "Sacha", "label": "Salle · service de midi", "date": "2026-10-07", "amount": 64, "status": "pending" },
-    { "id": "p3", "name": "Noor", "label": "Cuisine · service du soir", "date": "2026-10-06", "amount": 82.5, "status": "paid" }
-  ]
-}
+{ "items": [ { "id": "…", "shift_id": "shift-5", "employee_id": "eli", "employee_name": "Eli",
+  "label": "Bar · Chez Odile", "date": "2026-10-04", "hours": 5, "hourly_rate": 16,
+  "amount": 80, "amount_cents": 8000, "currency": "eur", "status": "to_validate",
+  "stripe_transfer_id": null, "error": null, "has_payout_account": false } ],
+  "to_validate_total": 80 }
 ```
+- `POST /api/payables/pay-all` → `{ "results": [ { "id": "…", "employee_name": "Eli", "ok": false, "error": "…" } ], "paid": 0, "failed": 1 }`. Une ligne en échec n'empêche pas les autres ; un virement n'est jamais créé deux fois.
+- `POST /api/payables/{id}/pay` → `{ "id": "…", "status": "paid", "stripe_transfer_id": "tr_…" }`. Erreurs : `payout_account_missing`, `payout_account_not_ready` (409), `shift_not_finished` (409, sauf `ALLOW_EARLY_PAYOUT=true`), `transfer_failed` (502).
+- `GET /api/earnings?employee_id=eli` → `{ "week_total": 80, "last_payment": { "amount": 80, "date": "2026-10-04" } | null, "items": [ { "id": "…", "type": "shift", "label": "Bar · Chez Odile", "date": "2026-10-04", "amount": 80, "status": "paid|upcoming" } ] }`
+- `GET /api/payout-account?employee_id=eli` → `{ "status": "none|pending|ready" }`
+- `POST /api/payout-account` `{ "employee_id": "eli", "email": "eli@example.com" }` → `{ "url": "https://connect.stripe.com/…" }` (inscription hébergée par Stripe). Erreur `sandbox_required` (501) tant que les clés ne sont pas celles d'un sandbox Stripe.

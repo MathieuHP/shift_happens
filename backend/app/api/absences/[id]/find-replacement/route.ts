@@ -1,4 +1,5 @@
 import { requireEntitlement } from "@/lib/billing/guard";
+import { runVoiceDispatch } from "@/lib/voice/dispatchCalls";
 import { handle } from "@/lib/inapp/http";
 import { findReplacement } from "@/lib/inapp/service";
 import { getAppState } from "@/lib/inapp/state";
@@ -11,6 +12,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   const { id } = await params;
   return handle(() => {
     const result = findReplacement(getAppState(), id, new Date());
+    void runVoiceDispatch(); // si les appels sont actifs (VOICE_ENABLED), le premier appel part
     return { id: id, status: result.report.status, offers_sent: result.offers.length, already_started: result.alreadyStarted };
   });
 }

@@ -103,6 +103,12 @@ export function callTimeoutSeconds() {
   return Number.isFinite(value) && value > 0 ? value : 30;
 }
 
+// Plafond de sécurité : une conversation qui dure plus longtemps que ça (agent bloqué, ligne ouverte) cesse de retenir le tour.
+export function callMaxSeconds() {
+  const value = Number(optionalEnv("CALL_MAX_SECONDS"));
+  return Number.isFinite(value) && value > 0 ? value : 180;
+}
+
 // options.callTimeoutSeconds : active la minuterie d'appel pour cette recherche (null/absent = offres sans minuterie).
 export function findReplacement(state: AppState, reportId: string, now: Date, options: { callTimeoutSeconds?: number } = {}) {
   advanceExpiredCalls(state, now);
@@ -148,7 +154,8 @@ export function findReplacement(state: AppState, reportId: string, now: Date, op
   }));
   state.offers.push(...offers);
   report.status = "searching";
-  report.call_timeout_seconds = options.callTimeoutSeconds ?? null;
+  // La minuterie (et donc les appels) est active pour la démo, et pour toute recherche quand la voix est activée.
+  report.call_timeout_seconds = options.callTimeoutSeconds ?? (optionalEnv("VOICE_ENABLED") === "true" ? callTimeoutSeconds() : null);
   addEvent(state, report.id, "search_started", `Offre envoyée à ${candidates.map((c) => c.name).join(", puis ")}.`, now);
   announceNextCall(state, report.id, now);
 
@@ -156,42 +163,199 @@ export function findReplacement(state: AppState, reportId: string, now: Date, op
 }
 
 // Le prochain candidat à appeler = la première offre encore en attente (l'ordre est celui de l'éligibilité).
-// On le note dans la timeline et on mémorise l'instant de l'appel pour le délai. L'appel vocal automatique se branchera ici.
+// On le note dans la timeline et, si les appels sont actifs (minuterie), on demande un appel : il part ensuite
+// vers ElevenLabs via `dispatchPendingCalls` (lib/voice/dispatchCalls.ts), qui est asynchrone.
 function announceNextCall(state: AppState, reportId: string, now: Date) {
   const next = state.offers.find((o) => o.report_id === reportId && o.status === "pending");
   if (!next) return;
-  if (findReport(state, reportId).call_timeout_seconds) next.called_at = now.toISOString();
+  if (findReport(state, reportId).call_timeout_seconds) {
+    next.called_at = now.toISOString();
+    state.calls.push({
+      id: crypto.randomUUID(),
+      offer_id: next.id,
+      report_id: reportId,
+      employee_id: next.employee_id,
+      idempotency_key: `offer:${next.id}`,
+      status: "queued",
+      provider: null,
+      conversation_id: null,
+      call_sid: null,
+      failure: null,
+      answered_at: null,
+      checked_at: null,
+      created_at: now.toISOString(),
+    });
+  }
   addEvent(state, reportId, "call_started", `Appel de ${employeeName(state, next.employee_id)}…`, now);
+}
+
+// Termine le tour du candidat actuel (sans réponse, appel échoué, non contacté), puis passe au suivant.
+// S'il n'y en a plus, le gérant est alerté.
+function endTurn(
+  state: AppState,
+  offer: Offer,
+  input: { status: "no_answer" | "skipped"; eventType: AppEventType; message: (hasNext: boolean) => string; noneLeft: string },
+  at: Date,
+) {
+  offer.status = input.status;
+  const report = findReport(state, offer.report_id);
+  const hasNext = state.offers.some((o) => o.report_id === report.id && o.status === "pending");
+  addEvent(state, report.id, input.eventType, input.message(hasNext), at);
+
+  if (hasNext) {
+    announceNextCall(state, report.id, at);
+  } else {
+    report.status = "unresolved";
+    addEvent(state, report.id, "no_replacement", input.noneLeft, at);
+  }
+}
+
+const NO_ANSWER_LEFT = "Personne n'a répondu : aucun remplaçant.";
+const NONE_REACHED = "Personne n'a pu être joint : aucun remplaçant.";
+
+function activeOffer(state: AppState, offerId: string) {
+  const offer = state.offers.find((o) => o.id === offerId);
+  if (!offer || offer.status !== "pending") return null;
+  return findReport(state, offer.report_id).status === "searching" ? offer : null;
 }
 
 // Passe au candidat suivant quand un appel reste sans réponse pendant le délai prévu (30 s par défaut).
 // Fonction idempotente : on peut l'appeler à chaque lecture. Si plusieurs délais se sont écoulés depuis le
 // dernier appel (personne n'a consulté l'état), on les rejoue dans l'ordre, avec les vraies heures dans la timeline.
+// Renvoie le nombre de délais dépassés traités.
 export function advanceExpiredCalls(state: AppState, now: Date) {
+  let expired = 0;
   for (const report of state.reports) {
     const timeout = report.call_timeout_seconds;
     if (report.status !== "searching" || !timeout) continue;
 
-    for (;;) {
+    while (report.status === "searching") {
       const current = state.offers.find((o) => o.report_id === report.id && o.status === "pending");
       if (!current?.called_at) break;
-      const expiresAt = new Date(new Date(current.called_at).getTime() + timeout * 1000);
+      const call = state.calls.find((c) => c.offer_id === current.id);
+      // Tant que la personne répond (elle a décroché), le délai de 30 s ne s'enclenche pas : seul un plafond de sécurité s'applique.
+      const talking = call?.status === "calling" && call.answered_at !== null;
+      const expiresAt = talking
+        ? new Date(new Date(call.answered_at as string).getTime() + callMaxSeconds() * 1000)
+        : new Date(new Date(current.called_at).getTime() + timeout * 1000);
       if (expiresAt > now) break;
 
-      current.status = "no_answer";
-      const hasNext = state.offers.some((o) => o.report_id === report.id && o.status === "pending");
+      if (call && ["queued", "dialing", "calling"].includes(call.status)) call.status = "no_answer";
       const name = employeeName(state, current.employee_id);
-      addEvent(state, report.id, "call_no_answer", `${name} n'a pas répondu (${timeout} s)${hasNext ? " : on passe au suivant." : "."}`, expiresAt);
-
-      if (hasNext) {
-        announceNextCall(state, report.id, expiresAt);
-      } else {
-        report.status = "unresolved";
-        addEvent(state, report.id, "no_replacement", "Personne n'a répondu : aucun remplaçant.", expiresAt);
-        break;
-      }
+      endTurn(
+        state,
+        current,
+        {
+          status: "no_answer",
+          eventType: "call_no_answer",
+          message: (hasNext) =>
+            talking
+              ? `${name} : conversation trop longue (${callMaxSeconds()} s) sans réponse${hasNext ? " : on passe au suivant." : "."}`
+              : `${name} n'a pas répondu (${timeout} s)${hasNext ? " : on passe au suivant." : "."}`,
+          noneLeft: NO_ANSWER_LEFT,
+        },
+        expiresAt,
+      );
+      expired += 1;
     }
   }
+  return expired;
+}
+
+// Le candidat ne peut pas être appelé (pas de consentement, hors plage horaire) : on passe au suivant.
+export function skipCall(state: AppState, offerId: string, reason: string, now: Date) {
+  const offer = activeOffer(state, offerId);
+  if (!offer) return false;
+  const call = state.calls.find((c) => c.offer_id === offer.id);
+  if (call) {
+    call.status = "skipped";
+    call.failure = reason;
+  }
+  const name = employeeName(state, offer.employee_id);
+  endTurn(
+    state,
+    offer,
+    { status: "skipped", eventType: "call_skipped", message: () => `${name} n'est pas appelé : ${reason}.`, noneLeft: NONE_REACHED },
+    now,
+  );
+  return true;
+}
+
+// Le fournisseur n'a pas pu lancer l'appel, ou l'a signalé comme échoué : on passe au suivant tout de suite.
+export function failCall(state: AppState, callId: string, reason: string, now: Date) {
+  const call = state.calls.find((c) => c.id === callId);
+  if (!call || !["dialing", "calling"].includes(call.status)) return false;
+  call.status = "failed";
+  call.failure = reason;
+  const offer = activeOffer(state, call.offer_id);
+  if (!offer) return false;
+  const name = employeeName(state, offer.employee_id);
+  endTurn(
+    state,
+    offer,
+    {
+      status: "no_answer",
+      eventType: "call_failed",
+      message: (hasNext) => `L'appel vers ${name} a échoué${hasNext ? " : on passe au suivant." : "."}`,
+      noneLeft: NONE_REACHED,
+    },
+    now,
+  );
+  return true;
+}
+
+// Le fournisseur signale « occupé » ou « injoignable » : même effet qu'un délai dépassé, sans attendre la fin du délai.
+export function endCallNoAnswer(state: AppState, callId: string, now: Date, cause = "occupé ou injoignable") {
+  const call = state.calls.find((c) => c.id === callId);
+  if (!call || !["dialing", "calling"].includes(call.status)) return false;
+  call.status = "no_answer";
+  const offer = activeOffer(state, call.offer_id);
+  if (!offer) return false;
+  const name = employeeName(state, offer.employee_id);
+  endTurn(
+    state,
+    offer,
+    {
+      status: "no_answer",
+      eventType: "call_no_answer",
+      message: (hasNext) => `${name} n'a pas répondu (${cause})${hasNext ? " : on passe au suivant." : "."}`,
+      noneLeft: NO_ANSWER_LEFT,
+    },
+    now,
+  );
+  return true;
+}
+
+// L'appel a été lancé chez le fournisseur : on garde ses identifiants (ils servent à retrouver l'offre quand l'agent répond).
+export function recordCallPlaced(
+  state: AppState,
+  callId: string,
+  result: { mode: "simulated" | "live"; conversationId: string | null; callSid: string | null },
+  now: Date,
+) {
+  const call = state.calls.find((c) => c.id === callId);
+  if (!call) return;
+  if (call.status === "dialing") call.status = "calling";
+  call.provider = result.mode === "live" ? "elevenlabs" : "simulated";
+  call.conversation_id = result.conversationId;
+  call.call_sid = result.callSid;
+  const name = employeeName(state, call.employee_id);
+  addEvent(state, call.report_id, "call_placed", `[${result.mode === "live" ? "LIVE" : "SIMULÉ"}] Appel lancé vers ${name}.`, now);
+}
+
+// La personne a décroché : le délai de 30 s est suspendu tant que la conversation dure.
+export function markCallAnswered(state: AppState, callId: string, now: Date) {
+  const call = state.calls.find((c) => c.id === callId);
+  if (!call || call.status !== "calling" || call.answered_at) return false;
+  if (!activeOffer(state, call.offer_id)) return false;
+  call.answered_at = now.toISOString();
+  addEvent(state, call.report_id, "call_answered", `${employeeName(state, call.employee_id)} a décroché.`, now);
+  return true;
+}
+
+function completeCall(state: AppState, offerId: string) {
+  const call = state.calls.find((c) => c.offer_id === offerId);
+  if (call && ["queued", "dialing", "calling"].includes(call.status)) call.status = "completed";
 }
 
 function offersOfReport(state: AppState, reportId: string) {
@@ -232,6 +396,7 @@ export function respondToOffer(
 
   if (!input.accept) {
     offer.status = "declined";
+    completeCall(state, offer.id);
     addEvent(state, report.id, "offer_declined", `${name} a refusé le shift.`, now);
     // Plus personne à attendre -> alerte gérant. Sinon on passe au candidat suivant.
     if (!state.offers.some((o) => o.report_id === report.id && o.status === "pending")) {
@@ -244,6 +409,7 @@ export function respondToOffer(
   }
 
   offer.status = "accepted";
+  completeCall(state, offer.id);
   if (state.settings.manager_approval_required) {
     report.status = "pending_approval";
     report.accepted_employee_id = offer.employee_id;

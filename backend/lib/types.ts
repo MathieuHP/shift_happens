@@ -31,6 +31,7 @@ export type EventType =
 
 export type Employee = {
   id: string;
+  restaurant_account_id: string;
   name: string;
   phone: string;
   role: EmployeeRole;
@@ -41,6 +42,7 @@ export type Employee = {
 
 export type Shift = {
   id: string;
+  restaurant_account_id: string;
   employee_id: string | null;
   role: EmployeeRole;
   skill_required: string;
@@ -51,6 +53,7 @@ export type Shift = {
 
 export type AbsenceCase = {
   id: string;
+  restaurant_account_id: string;
   absent_employee_id: string;
   shift_id: string;
   status: AbsenceCaseStatus;
@@ -63,7 +66,10 @@ export type CallAttempt = {
   absence_case_id: string;
   employee_id: string;
   status: CallAttemptStatus;
+  idempotency_key: string | null;
   twilio_call_sid: string | null;
+  voice_provider: string;
+  voice_conversation_id: string | null;
 };
 
 export type TimelineEvent = {
@@ -78,4 +84,54 @@ export type TimelineEvent = {
 export type Candidate = Employee & {
   score: number;
   reason: string;
+};
+
+export type RestaurantAccount = {
+  id: string;
+  name: string;
+  timezone: string;
+  autopilot_enabled: boolean;
+  manager_confirmation_required: boolean;
+  demo_seeded: boolean;
+};
+
+export type SubscriptionStatus =
+  | "inactive"
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled";
+
+export type Subscription = {
+  id: string;
+  restaurant_account_id: string;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  stripe_price_id: string | null;
+  subscription_status: SubscriptionStatus;
+  current_period_end: string | null;
+  last_event_id: string | null;
+};
+
+export type VoiceInteraction = {
+  id: string;
+  restaurant_account_id: string;
+  absence_case_id: string | null;
+  call_attempt_id: string | null;
+  provider: "twilio" | "elevenlabs";
+  direction: "inbound" | "outbound";
+  twilio_call_sid: string | null;
+  conversation_id: string | null;
+  metadata: Record<string, unknown>;
+};
+
+export type AuditEvent = {
+  id: string;
+  restaurant_account_id: string | null;
+  absence_case_id: string | null;
+  actor_type: "system" | "manager" | "employee" | "provider";
+  actor_id: string | null;
+  event_type: string;
+  payload: Record<string, unknown>;
+  created_at: string;
 };

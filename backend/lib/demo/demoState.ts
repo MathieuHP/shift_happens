@@ -17,10 +17,12 @@ export type DemoDashboardState = {
     role: string;
     phone: string;
     // scheduled : en poste ce soir · available : extra disponible · queued : dans la file d'appel
-    // called : appelé en ce moment · no_answer : n'a pas répondu à temps · declined / accepted : réponse reçue · absent : n'a pas pointé
-    status: "scheduled" | "available" | "queued" | "called" | "no_answer" | "declined" | "accepted" | "absent";
-    // Seulement pour `called` : instant où l'appel expire (ISO), pour afficher le compte à rebours
+    // called : appelé en ce moment · no_answer : n'a pas répondu à temps · skipped : non appelé (consentement, plage horaire) · declined / accepted : réponse reçue · absent : n'a pas pointé
+    status: "scheduled" | "available" | "queued" | "called" | "no_answer" | "skipped" | "declined" | "accepted" | "absent";
+    // Seulement pour `called` : instant où l'appel expire (ISO), pour le compte à rebours ; absent si la personne a décroché
     callExpiresAt?: string;
+    // `called` + la personne a décroché : en conversation, le délai est suspendu
+    answered?: boolean;
   }>;
   schedule: Array<{
     id: string;
@@ -70,14 +72,17 @@ export function buildDemoState(app: AppState, now: Date): DemoDashboardState {
     if (offer) {
       if (offer.status === "accepted") status = "accepted";
       else if (offer.status === "no_answer") status = "no_answer";
+      else if (offer.status === "skipped") status = "skipped";
       else if (offer.status === "declined" || offer.status === "rejected") status = "declined";
       else if (offer.status === "pending") status = offer === firstPending ? "called" : "queued";
     }
+    const call = offer ? app.calls.find((c) => c.offer_id === offer.id) : undefined;
+    const answered = status === "called" && Boolean(call?.answered_at);
     const callExpiresAt =
-      status === "called" && offer?.called_at && report?.call_timeout_seconds
+      status === "called" && !answered && offer?.called_at && report?.call_timeout_seconds
         ? new Date(new Date(offer.called_at).getTime() + report.call_timeout_seconds * 1000).toISOString()
         : undefined;
-    return { id: employee.id, name: employee.name, role: roleLabel(employee.role), phone: employee.phone, status, callExpiresAt };
+    return { id: employee.id, name: employee.name, role: roleLabel(employee.role), phone: employee.phone, status, callExpiresAt, answered };
   });
 
   const schedule = tonight.map((s) => ({

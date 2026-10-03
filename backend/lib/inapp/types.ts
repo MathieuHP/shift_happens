@@ -32,7 +32,8 @@ export type ShiftReport = {
 };
 
 // no_answer : l'appel est resté sans réponse pendant le délai prévu (le candidat perd son tour)
-export type OfferStatus = "pending" | "accepted" | "declined" | "closed" | "rejected" | "no_answer";
+// skipped : le candidat n'a pas été appelé (pas de consentement, hors plage horaire)
+export type OfferStatus = "pending" | "accepted" | "declined" | "closed" | "rejected" | "no_answer" | "skipped";
 
 export type Offer = {
   id: string;
@@ -45,13 +46,39 @@ export type Offer = {
   created_at: string;
 };
 
+// Un appel vocal à un candidat (une offre = au plus un appel).
+// queued : demandé par le serveur, pas encore lancé · dialing : en cours d'envoi au fournisseur
+// calling : lancé (la personne est jointe ou le téléphone sonne) · no_answer / failed / skipped : tour terminé sans réponse
+// completed : réponse reçue ou offre devenue sans objet
+export type VoiceCallStatus = "queued" | "dialing" | "calling" | "no_answer" | "failed" | "skipped" | "completed";
+
+export type VoiceCall = {
+  id: string;
+  offer_id: string;
+  report_id: string;
+  employee_id: string;
+  idempotency_key: string; // une offre = un appel : rejouer la demande ne rappelle jamais
+  status: VoiceCallStatus;
+  provider: "simulated" | "elevenlabs" | null;
+  conversation_id: string | null; // identifiant ElevenLabs : sert à retrouver l'offre quand l'agent répond
+  call_sid: string | null; // identifiant Twilio
+  failure: string | null;
+  answered_at: string | null; // la personne a décroché : tant que la conversation dure, le délai de 30 s ne s'applique plus
+  checked_at: string | null; // dernière fois qu'on a demandé l'état de l'appel au fournisseur
+  created_at: string;
+};
+
 export type AppEventType =
   | "absence_reported"
   | "delay_reported"
   | "no_show_detected"
   | "search_started"
   | "call_started"
+  | "call_placed"
+  | "call_answered"
   | "call_no_answer"
+  | "call_failed"
+  | "call_skipped"
   | "offer_declined"
   | "replacement_accepted"
   | "approval_requested"
@@ -79,6 +106,7 @@ export type AppState = {
   shifts: Shift[];
   reports: ShiftReport[];
   offers: Offer[];
+  calls: VoiceCall[];
   events: AppEvent[];
 };
 

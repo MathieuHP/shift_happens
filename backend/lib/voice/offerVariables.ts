@@ -1,3 +1,5 @@
+import { optionalEnv } from "@/lib/env";
+
 export function buildOfferDynamicVariables(input: {
   restaurantName: string;
   employeeName: string;
@@ -23,9 +25,16 @@ export function buildOfferDynamicVariables(input: {
     minimumFractionDigits: 2, maximumFractionDigits: 2,
   }).format(value);
 
+  const firstName = input.employeeName.trim().split(/\s+/)[0] ?? input.employeeName;
+
   return {
+    // Variables du premier message de l'agent ElevenLabs (« {{greeting}} {{user_name}}, ici {{agent_name}}, l'assistant… ») :
+    // elles doivent être envoyées à chaque appel, sinon ElevenLabs raccroche dès le décroché.
+    greeting: "Bonjour",
+    user_name: firstName,
+    agent_name: optionalEnv("VOICE_AGENT_NAME") ?? "Eleven",
     restaurant_name: input.restaurantName,
-    employee_first_name: input.employeeName.trim().split(/\s+/)[0] ?? input.employeeName,
+    employee_first_name: firstName,
     role: input.role,
     shift_date: new Intl.DateTimeFormat("fr-BE", {
       weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: input.timeZone,

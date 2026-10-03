@@ -132,6 +132,7 @@ export function createSeedState(now: Date): AppState {
     ],
     reports: [],
     offers: [],
+    calls: [],
     events: [],
   };
 }

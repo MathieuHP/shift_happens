@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { runVoiceDispatch } from "@/lib/voice/dispatchCalls";
 import { handle, readJson } from "@/lib/inapp/http";
 import { respondToOffer } from "@/lib/inapp/service";
 import { getAppState } from "@/lib/inapp/state";
@@ -12,6 +13,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   return handle(async () => {
     const body = bodySchema.parse(await readJson(request));
     const result = respondToOffer(getAppState(), { offerId: id, employeeId: body.employee_id, accept: true }, new Date());
+    void runVoiceDispatch(); // après un refus, l'appel suivant part tout de suite
     return { id, ...result };
   });
 }

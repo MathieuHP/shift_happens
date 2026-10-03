@@ -10,12 +10,20 @@ export type PlaceCallResult = {
   callSid: string | null;
 };
 
+// État d'un appel côté fournisseur : sonne · en conversation · terminé · échoué · inconnu
+export type CallLiveStatus = "ringing" | "in_progress" | "ended" | "failed" | "unknown";
+
 export interface VoiceProvider {
   prepare?(): Promise<void>;
   placeCall(request: PlaceCallRequest): Promise<PlaceCallResult>;
+  getCallStatus?(conversationId: string): Promise<CallLiveStatus>;
 }
 
 export class SimulatedVoiceProvider implements VoiceProvider {
+  async getCallStatus(): Promise<CallLiveStatus> {
+    return "unknown"; // appel simulé : pas de vrai état, seul le délai s'applique
+  }
+
   async placeCall(request: PlaceCallRequest): Promise<PlaceCallResult> {
     console.info(`[SIMULÉ] Voice call requested (key=${request.idempotencyKey})`);
     return {
@@ -36,6 +44,7 @@ export type ElevenLabsVoiceProviderConfig = {
 
 type ElevenLabsOutboundCallResponse = {
   success: boolean;
+  message?: string | null;
   conversation_id?: string | null;
   callSid?: string | null;
 };
@@ -108,7 +117,8 @@ export class ElevenLabsVoiceProvider implements VoiceProvider {
 
     const result = (await response.json()) as ElevenLabsOutboundCallResponse;
     if (!result.success) {
-      throw new Error("ElevenLabs did not accept the outbound call request");
+      // ElevenLabs explique le refus dans `message` (ex. Twilio : pays non autorisé). On le garde pour la timeline.
+      throw new Error(result.message ? `ElevenLabs : ${result.message}` : "ElevenLabs did not accept the outbound call request");
     }
 
     return {
@@ -116,5 +126,29 @@ export class ElevenLabsVoiceProvider implements VoiceProvider {
       conversationId: result.conversation_id ?? null,
       callSid: result.callSid ?? null,
     };
+  }
+
+  // GET /v1/convai/conversations/{id} : statuts documentés `initiated`, `in-progress`, `processing`, `done`, `failed`.
+  // `initiated` = l'appel sonne, `in-progress` = la personne a décroché et parle avec l'agent.
+  async getCallStatus(conversationId: string): Promise<CallLiveStatus> {
+    const response = await this.fetchImpl(
+      `https://api.elevenlabs.io/v1/convai/conversations/${encodeURIComponent(conversationId)}`,
+      { headers: { "xi-api-key": this.config.apiKey }, signal: AbortSignal.timeout(5_000) },
+    );
+    if (!response.ok) return "unknown"; // ne jamais faire échouer un appel à cause d'une lecture d'état
+    const body = (await response.json()) as { status?: unknown };
+    switch (body.status) {
+      case "initiated":
+        return "ringing";
+      case "in-progress":
+        return "in_progress";
+      case "processing":
+      case "done":
+        return "ended";
+      case "failed":
+        return "failed";
+      default:
+        return "unknown";
+    }
   }
 }

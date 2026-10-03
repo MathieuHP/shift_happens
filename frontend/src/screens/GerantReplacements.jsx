@@ -12,6 +12,7 @@ const ROSTER_STATUS = {
   queued: { label: 'En file', color: 'gris' },
   called: { label: 'Appel en cours', color: 'jaune' },
   no_answer: { label: 'Sans réponse', color: 'orange' },
+  skipped: { label: 'Non contacté', color: 'gris' },
   declined: { label: 'A refusé', color: 'gris' },
   accepted: { label: 'A accepté', color: 'vert' },
   absent: { label: 'Absent', color: 'orange' },
@@ -23,6 +24,10 @@ const EVENT_LABEL = {
   absence_reported: 'Absence',
   search_started: 'Recherche',
   call_started: 'Appel',
+  call_placed: 'Appel lancé',
+  call_answered: 'Décroché',
+  call_failed: 'Échec appel',
+  call_skipped: 'Non contacté',
   call_no_answer: 'Sans réponse',
   offer_declined: 'Refus',
   replacement_accepted: 'Accepté',
@@ -170,7 +175,7 @@ export default function GerantReplacements() {
                     <p className="text-sm text-secondaire">{employee.role}</p>
                   </div>
                   <Badge color={ROSTER_STATUS[employee.status]?.color ?? 'gris'}>
-                    {ROSTER_STATUS[employee.status]?.label ?? employee.status}
+                    {employee.answered ? 'En conversation' : (ROSTER_STATUS[employee.status]?.label ?? employee.status)}
                     {secondsLeft(employee) !== null && ` · ${secondsLeft(employee)} s`}
                   </Badge>
                 </div>

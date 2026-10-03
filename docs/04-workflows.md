@@ -1,3 +1,5 @@
+> **Note (2026-10-03):** the hackathon build is in-app only (no SMS/voice). Voice sections below are post-hackathon. See the decision log in `09-open-decisions.md`.
+
 # Workflows and state machines
 
 ## Entities with separate state

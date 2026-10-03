@@ -55,13 +55,10 @@ export const getPlanning = (weekStart) =>
 // ShiftSaver live demo — always calls the backend/proxy, never mock data.
 export const getDemoState = () => request('/api/demo/state')
 
-export const triggerDemoAbsence = () =>
-  request('/api/demo/absence', 'POST', {
-    fromPhone: '+15550001001',
-    body: 'I am sick and cannot make my 8 AM shift',
-  })
+export const triggerDemoAbsence = () => request('/api/demo/absence', 'POST')
 
 export const triggerDemoNoShow = () => request('/api/demo/no-show', 'POST')
+export const resetDemo = () => request('/api/demo/reset', 'POST')
 
 // Écran 6 — Gérant, équipe
 export const getTeam = () =>

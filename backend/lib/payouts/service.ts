@@ -4,6 +4,7 @@
 import type Stripe from "stripe";
 
 import type { AppState } from "@/lib/inapp/types";
+import { localDate } from "@/lib/inapp/time";
 import { DomainError } from "@/lib/inapp/types";
 
 import type { Payable, PayoutsState, PayoutsStore } from "./store";
@@ -33,7 +34,7 @@ export function syncPayables(app: AppState, store: PayoutsStore, now: Date): Pay
       employee_id: shift.employee_id,
       employee_name: employee?.name ?? shift.employee_id,
       label: `${roleLabel(shift.role)} · ${app.restaurant_name}`,
-      date: shift.starts_at.slice(0, 10),
+      date: localDate(shift.starts_at),
       hours,
       hourly_rate: hourlyRate,
       amount_cents: Math.round(hours * hourlyRate * 100),

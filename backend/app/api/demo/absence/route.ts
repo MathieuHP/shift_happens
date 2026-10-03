@@ -1,45 +1,18 @@
+import { buildDemoState } from "@/lib/demo/demoState";
+import { handle } from "@/lib/inapp/http";
+import { startDemoIncident } from "@/lib/inapp/simulate";
+import { getAppState } from "@/lib/inapp/state";
 import { checkDemoSecret } from "@/lib/security";
-import { z } from "zod";
 
-import { handleAbsenceMessage } from "@/lib/cascade/handleAbsenceMessage";
-import { setDemoStateFromCascade } from "@/lib/demo/demoState";
-import { simulateDemoAbsence } from "@/lib/demo/simulateDemoAbsence";
-import { hasSupabaseConfig } from "@/lib/env";
-
-const demoAbsenceSchema = z.object({
-  fromPhone: z.string().default("+15550001001"),
-  body: z.string().default("I'm sick and cannot make my 8 AM shift."),
-});
-
+// POST /api/demo/absence -> Simule une absence signalée par SMS : Jade se déclare malade.
+// La recherche de remplaçant démarre aussitôt (Kash, puis Mathieu). Un second clic pendant l'incident ne fait rien de plus.
 export async function POST(request: Request) {
   const denied = checkDemoSecret(request);
   if (denied) return denied;
 
-  try {
-    const payload = demoAbsenceSchema.parse(await request.json().catch(() => ({})));
-
-    if (!hasSupabaseConfig()) {
-      const result = simulateDemoAbsence(payload);
-      setDemoStateFromCascade(result);
-
-      return Response.json(result);
-    }
-
-    const result = await handleAbsenceMessage(payload);
-
-    return Response.json({
-      mode: "live",
-      simulated: false,
-      absenceCaseId: result.absenceCaseId,
-      absentEmployee: result.absentEmployee.name,
-      candidateCount: result.candidates.length,
-      cascade: result.cascade,
-    });
-  } catch (error) {
-    console.error("Demo absence failed", error);
-    return Response.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 },
-    );
-  }
+  return handle(() => {
+    const now = new Date();
+    const { started } = startDemoIncident("absence", now);
+    return { started, ...buildDemoState(getAppState(now), now) };
+  });
 }

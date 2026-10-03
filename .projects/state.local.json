@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "project": {
+    "catalog": "prod",
+    "merchantId": "acct_1UMQLlDZiVJq8dTq",
+    "merchantDisplayName": "myself",
+    "projectId": "project_61VVqsIwvLjg8ltad16VVoJ9RC9CV0uvluNZeqCZE7jc",
+    "projectName": "shiftsaver",
+    "initializedAt": "2026-10-03T13:23:58.742Z"
+  },
+  "providers": {},
+  "resources": {}
+}

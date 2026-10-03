@@ -5,35 +5,35 @@ Build one feature at a time. Each feature is demoable alone, has a definition of
 | # | Feature | Real | Mocked at this step | Priority |
 |---|---|---|---|---|
 | F0 | Foundations: seed data, DB, audit log, idempotency helper, provider adapter interfaces + mock adapters | all | voice, billing | Must |
-| F1 | Case lifecycle + manager dashboard (case created via dashboard form) | state machine, audit, auth | caller input | Must |
+| F1 | Attendance-recovery case lifecycle + manager dashboard | state machine, audit, auth | scanner/attendance event input | Must |
 | F2 | Deterministic eligibility with rule reasons | all | – | Must |
-| F3 | Approval → sequential offers → held acceptance → atomic confirmation | all logic | outbound call = demo inbox | Must |
+| F3 | Sequential replacement offers → held acceptance → assignment/confirmation | all logic | outbound call = demo inbox | Must |
 | F4 | Urgency: case deadline, manager notification, reminder | logic | notification channel may be a stub | Must |
-| F5 | Inbound voice intake (ElevenLabs + Twilio) creating a pending case | voice, tools, validation | – | Must demo |
+| F5 | Outbound attendance check + replacement cascade (ElevenLabs + Twilio) | QR validation, timing, calls, responses | provider transport may be mocked | Must demo |
 | F6 | Stripe test checkout + webhook + entitlement gating | all | webhook transport may be signed fixture | Must demo |
-| F7 | Outbound voice offers (ElevenLabs Twilio outbound call) | calls | – | Should demo |
+| F7 | Absorbed into F5: outbound voice offers | – | – | – |
 | F8 | Time-off request recorded as pending only | all | – | Should |
 | F9 | Customer Portal link + subscription/usage panel | all | – | Could |
 
-Rationale for the order: F0–F4 give a complete, honest end-to-end loop without any provider. F5–F7 then replace mocks one provider at a time, so a provider failure never blocks the loop. Voice (F5) comes before Stripe because voice is the product.
+Rationale for the order: F0–F4 give a complete, honest end-to-end loop without a live provider. F5 then replaces the outbound-call mock with real attendance checks and replacement calls, so provider failure never changes the domain loop. Voice remains the operational product surface, but employees do not call inbound.
 
 ## Functional requirements
 
 | ID | Feature | Requirement |
 |---|---|---|
-| FR-01 | F1/F5 | Match caller to an employee by approved phone mapping; otherwise collect employee ID/name and flag the case unverified for manager review. |
-| FR-02 | F5 | Voice agent discloses automation, captures callout vs time-off and the shift, reads details back and accepts correction. |
-| FR-03 | F5 | Agent tool arguments (employee, shift ID, type) are validated server-side: the shift must belong to the verified employee and be upcoming. The server never accepts a model-supplied identity. |
-| FR-04 | F1/F5 | Creating a case never approves leave, authorizes outreach or assigns anyone. |
-| FR-05 | F1 | Manager sees case, shift, deadline, candidate list with eligibility reasons and warnings; summary is template-generated from fields (no LLM). |
-| FR-06 | F2 | Eligibility computed by server code only (rules below). |
-| FR-07 | F3 | Authenticated manager approval before any outreach; manager may edit recipients or reject. |
-| FR-08 | F3/F7 | Candidates contacted strictly one at a time; each offer has a timeout; stop at first held acceptance. Fallback to a labeled demo inbox. |
-| FR-09 | F3 | Acceptance stays `accepted_pending_manager` until the manager confirms; confirmation is atomic and single-winner. |
-| FR-10 | F0 | Every state change, offer response and provider event is audited and deduplicated. |
-| FR-11 | F4 | Every case has a deadline (shift start). Manager is notified on case creation and reminded if unapproved after a configured delay (demo default 2 min). Cases past deadline are flagged, never silently dropped. |
+| FR-01 | F1/F5 | A check-in token is bound to exactly one employee and shift; the venue/manager scanner rejects wrong, expired, reused, or invalid tokens. |
+| FR-02 | F5 | Check-in opens at `T−10`; at `T−5`, no valid check-in and no late declaration starts exactly one attendance-recovery workflow. |
+| FR-03 | F5 | The system calls the scheduled employee once and classifies only `on_my_way`, `absent`, `no_answer`, or `unclear`; no response is inferred beyond those outcomes. |
+| FR-04 | F1/F5 | `on_my_way` stops the cascade; `absent`, `no_answer`, or `unclear` starts sequential calls to eligible replacements. |
+| FR-05 | F1/F5 | Replacement assignment mode is manager-configurable: automatic first acceptance or held acceptance requiring manager confirmation. |
+| FR-06 | F1 | Manager sees attendance status, shift, deadline, candidate list with eligibility reasons and warnings; summary is template-generated from fields (no LLM). |
+| FR-07 | F2 | Eligibility computed by server code only (rules below). |
+| FR-08 | F3 | Replacement candidates are contacted strictly one at a time; each offer has a timeout; stop at first acceptance. Fallback to a labeled demo inbox. |
+| FR-09 | F3 | Manual mode keeps acceptance in `accepted_pending_manager`; confirmation is atomic and single-winner. Automatic mode assigns the first valid acceptance atomically. |
+| FR-10 | F0 | Every state change, check-in, call response and provider event is audited and deduplicated. |
+| FR-11 | F4 | Every recovery case has a deadline (shift start). Manager is notified on creation and reminded if unresolved after a configured delay. Cases past deadline are flagged, never silently dropped. |
 | FR-12 | F6 | Create account + Stripe test subscription; verified, idempotent webhooks; entitlement derived from persisted subscription state. |
-| FR-13 | F6 | Entitlement is binary: `trialing`/`active` → enabled; anything else → disabled (no new intake or outreach; existing data readable). Checkout redirect alone grants nothing. |
+| FR-13 | F6 | Entitlement is binary: `trialing`/`active` → enabled; anything else → disabled (no new attendance recovery or outreach; existing data readable). Checkout redirect alone grants nothing. |
 | FR-14 | F9 | Subscription status and Customer Portal link on dashboard. |
 | FR-15 | F8 | Future time-off request stored as pending only. |
 
@@ -50,7 +50,7 @@ Order: least recent offer first, then stable tie-break by employee ID. Never ran
 
 ## Non-functional and privacy
 - Do not ask for a medical reason; do not persist raw audio or transcripts. The ElevenLabs agent runs with recording and transcript retention disabled; provider-side retention to be confirmed in the spike (`09-open-decisions.md`).
-- Caller ID is a convenience match, not authentication. Anything unmatched is flagged unverified; no outreach happens without manager approval anyway.
+- QR tokens are signed, employee/shift-bound, time-limited and single-use. A scan is attendance evidence for operations, not proof of worked hours or payroll.
 - Manager endpoints require an authenticated session; provider secrets stay server-side; verify webhook signatures where supported.
 - Mutating calls are idempotent. Demo uses seeded data and test numbers only.
-- Speech unclear twice → offer callback or create a manager-review case.
+- An unclear attendance response does not infer intent; it starts the configured fallback path and alerts the manager.

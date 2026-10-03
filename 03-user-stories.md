@@ -8,9 +8,9 @@ As a developer, I need a stable base so later features only add behavior.
 - [ ] `AuditEvent`, `ProviderEvent` and idempotency-key storage exist and are used by every mutation.
 - [ ] Adapter interfaces `VoiceProvider`, `BillingProvider` exist with a mock implementation each; mocks are visibly labeled in the UI/logs.
 
-## F1 — Case lifecycle and manager dashboard
-As a manager, I see callouts and move them through states.
-- [ ] Dashboard form creates a callout case for an employee + shift (stand-in for voice) in `received`/`needs_review`.
+## F1 — Attendance-recovery case lifecycle and manager dashboard
+As a manager, I see missing check-ins and move recovery cases through states.
+- [ ] A missing-check-in event creates an attendance-recovery case for an employee + shift in `received`/`needs_review`.
 - [ ] Case page shows employee, shift, deadline, verification flag, template summary and audit trail.
 - [ ] Only an authenticated manager can approve/reject; illegal transitions are rejected by the server.
 
@@ -28,19 +28,22 @@ As a manager, I control who is contacted and who is assigned.
 - [ ] Two simultaneous acceptances yield one held acceptance.
 
 ## F4 — Urgency
-As a manager, I must not miss a callout.
-- [ ] Case creation triggers a notification (stub allowed: visible toast + log line).
-- [ ] An unapproved case triggers a reminder after the configured delay.
+As a manager, I must not miss a missing check-in.
+- [ ] Recovery-case creation triggers a notification (stub allowed: visible toast + log line).
+- [ ] An unresolved recovery case triggers a reminder after the configured delay.
 - [ ] A case whose shift has started is flagged "past deadline" in the dashboard.
 
-## F5 — Inbound voice intake
-As an employee, I explain naturally that I cannot work.
-- [ ] Calling the Twilio number reaches the ElevenLabs agent; it states that it is automated.
-- [ ] Agent tools: lookup caller → list that employee's upcoming shifts → create pending case. The shift ID passed must be one the server returned for that employee.
-- [ ] Agent reads back employee, shift and intent; correction is possible; no promise of cover or approval.
-- [ ] Exactly one pending case is created, with a reference; replaying the tool call creates no duplicate.
-- [ ] Twilio `CallSid` and ElevenLabs `conversation_id` are stored on one `VoiceInteraction`.
-- [ ] Unknown caller → unverified case for manager; two unclear answers → callback offer / manager-review case.
+## F5 — Outbound attendance check and replacement cascade
+As a manager, I want the system to react when an employee has not checked in.
+- [ ] Employee app generates a signed QR token bound to exactly one employee and shift.
+- [ ] Venue/manager scanner accepts a valid token and rejects wrong-employee, expired, reused, or invalid tokens.
+- [ ] Check-in opens at `T−10`; a missing check-in at `T−5` creates exactly one recovery case.
+- [ ] Employee can declare “I’m late” before `T−5`; this prevents the recovery call and records the declaration.
+- [ ] System calls the scheduled employee once and records only `on_my_way`, `absent`, `no_answer`, or `unclear`.
+- [ ] `on_my_way` stops the cascade; `absent`, `no_answer`, or `unclear` starts the next eligible replacement call.
+- [ ] Replacement calls proceed strictly one at a time and advance idempotently after decline, timeout, no answer, or failure.
+- [ ] Manager setting controls automatic assignment versus `accepted_pending_manager` confirmation.
+- [ ] Replayed scheduler or provider callbacks create no duplicate case, call, or assignment.
 
 ## F6 — Stripe subscription and entitlement
 As a restaurant manager, I activate the product.
@@ -49,11 +52,8 @@ As a restaurant manager, I activate the product.
 - [ ] Inactive entitlement blocks new intake and outreach; existing cases remain readable and unchanged.
 - [ ] Browser redirect alone does not activate the account.
 
-## F7 — Outbound voice offers
-As a candidate, I get a short call with the offer.
-- [ ] Backend persists a `CallAttempt` and idempotency key before calling ElevenLabs' Twilio outbound endpoint, then stores the returned IDs.
-- [ ] Agent presents date/time/role and records yes/no through a scoped tool bound to that offer.
-- [ ] Failure or no answer advances the sequence only after the outcome is resolved; the agent cannot pick recipients or start more calls.
+## F7 — Absorbed into F5
+Outbound voice offers are covered by F5 and are not a separate feature.
 
 ## F8 — Time-off request
 - [ ] A time-off intent creates a `TimeOffRequest` in `pending`; nothing is approved, no shift is touched.

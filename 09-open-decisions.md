@@ -5,16 +5,19 @@
 ## Spikes
 | Spike | Feature | Verify | Exit |
 |---|---|---|---|
-| ElevenLabs + Twilio inbound | F5 | Provision Twilio number, import to agent, inbound routing, supported language, test-number restrictions, region | Real call reaches agent, else mock voice |
-| Agent webhook tools | F5 | Tool schema, how the agent authenticates to our API (header/secret/signature), passing caller number and `conversation_id` to the tool, provider-side transcript/audio retention can be switched off | Server can trust call context, else mock |
-| ElevenLabs outbound | F7 | `agent_phone_number_id`, caller ID, outbound to test numbers, call status callbacks, `call_recording_enabled=false` honored | One outbound call completes, else demo inbox |
+| QR signing and venue scanner | F5 | Employee/shift binding, signing key, expiry, single-use behavior, wrong-employee rejection, scanner identity | Valid scan records check-in and invalid/replayed scans are rejected |
+| Attendance scheduler | F5 | Durable `T−10` check-in opening, `T−5` recovery trigger, retry/replay behavior, timezone handling | One recovery case starts at the correct time, else labeled fixture |
+| ElevenLabs outbound attendance call | F5 | Agent ID, caller ID, test-number restrictions, response intents (`on_my_way`, `absent`, `unclear`), status callbacks, `call_recording_enabled=false` honored | One attendance call completes, else mock voice |
+| ElevenLabs outbound replacement offer | F5 | `agent_phone_number_id`, recipient binding, offer context, timeout, callback authentication, test numbers | One replacement offer completes, else demo inbox |
 | Stripe | F6 | Test account, price ID, Checkout, webhook forwarding + signature verification, Customer Portal | Checkout + signed webhook work, else signed fixture |
 
 ## Decisions (current default in bold)
-- **Understanding lives in the ElevenLabs agent** (structured tool arguments); server validates. No LLM service. Revisit only if a spike shows the agent cannot reliably choose among listed shifts.
+- **Attendance response vocabulary** is limited to `on_my_way`, `absent`, `no_answer`, and `unclear`; server validates. No LLM service.
 - **Sequential offers**, 45 s per voice offer; parallel top-N later.
+- **Check-in timing:** opens at `T−10`; recovery evaluation is at `T−5` in the restaurant timezone.
+- **Assignment mode:** manager-configurable automatic assignment or manual confirmation; manual is the default for the demo.
 - **Binary entitlement.**
-- **Demo language:** pick one (default French, matching the mockup) before the F5 spike.
+- **Demo language:** pick one (default French, matching the mockup) before the F5 voice spike.
 - **Manager notification channel:** dashboard + stub in MVP; real SMS/email after the hackathon.
 - **Minimum rest hours default 11:** placeholder; local rules to be confirmed before any pilot.
 - **Pricing (€99–€299/month):** unvalidated.

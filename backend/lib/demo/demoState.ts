@@ -1,6 +1,9 @@
 import type { simulateDemoAbsence } from "@/lib/demo/simulateDemoAbsence";
+import type { simulateDemoNoShow } from "@/lib/demo/simulateDemoNoShow";
 
 type DemoAbsenceResult = ReturnType<typeof simulateDemoAbsence>;
+type DemoNoShowResult = ReturnType<typeof simulateDemoNoShow>;
+type DemoCascadeResult = DemoAbsenceResult | DemoNoShowResult;
 
 export type DemoDashboardState = {
   mode: "simulated" | "live";
@@ -26,6 +29,7 @@ export type DemoDashboardState = {
   }>;
   currentCase: null | {
     id: string;
+    trigger: string;
     absentEmployee: string;
     replacementEmployee: string | null;
     shiftRole: string;
@@ -110,36 +114,38 @@ export function resetDemoState() {
   return state;
 }
 
-export function setDemoStateFromAbsence(result: DemoAbsenceResult) {
+export function setDemoStateFromCascade(result: DemoCascadeResult) {
+  const fallbackRoster: DemoDashboardState["roster"] = [
+    {
+      id: "demo-paul-martin",
+      name: "Paul Martin",
+      role: "server",
+      phone: "+15550001001",
+      status: "absent",
+    },
+    {
+      id: "demo-sarah-lee",
+      name: "Sarah Lee",
+      role: "server",
+      phone: "+15550001002",
+      status: "declined",
+    },
+    {
+      id: "demo-thomas-reed",
+      name: "Thomas Reed",
+      role: "server",
+      phone: "+15550001003",
+      status: "accepted",
+    },
+  ];
+  const replacementEmployee = result.replacementEmployee;
   const state: DemoDashboardState = {
     mode: result.mode,
     simulated: result.simulated,
     status: "resolved",
     updatedAt: new Date().toISOString(),
     managerNotification: result.managerNotification,
-    roster: [
-      {
-        id: "demo-paul-martin",
-        name: "Paul Martin",
-        role: "server",
-        phone: "+15550001001",
-        status: "absent",
-      },
-      {
-        id: "demo-sarah-lee",
-        name: "Sarah Lee",
-        role: "server",
-        phone: "+15550001002",
-        status: "declined",
-      },
-      {
-        id: "demo-thomas-reed",
-        name: "Thomas Reed",
-        role: "server",
-        phone: "+15550001003",
-        status: "accepted",
-      },
-    ],
+    roster: "roster" in result ? result.roster : fallbackRoster,
     schedule: [
       {
         id: "demo-shift-8am",
@@ -147,14 +153,15 @@ export function setDemoStateFromAbsence(result: DemoAbsenceResult) {
         startsAt: result.shift.startsAt,
         endsAt: result.shift.endsAt,
         status: "covered",
-        employeeName: "Thomas Reed",
+        employeeName: replacementEmployee,
         replacementFor: result.absentEmployee,
       },
     ],
     currentCase: {
       id: result.absenceCaseId,
+      trigger: result.trigger,
       absentEmployee: result.absentEmployee,
-      replacementEmployee: "Thomas Reed",
+      replacementEmployee,
       shiftRole: result.shift.role,
       startsAt: result.shift.startsAt,
       endsAt: result.shift.endsAt,
@@ -167,3 +174,5 @@ export function setDemoStateFromAbsence(result: DemoAbsenceResult) {
   getStore()[GLOBAL_KEY] = state;
   return state;
 }
+
+export const setDemoStateFromAbsence = setDemoStateFromCascade;

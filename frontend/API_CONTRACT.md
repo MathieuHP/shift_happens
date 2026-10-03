@@ -21,6 +21,9 @@ Triggers the autonomous replacement cascade.
 { "fromPhone": "+15550001001", "body": "I am sick and cannot make my 8 AM shift" }
 ```
 
+### `POST /api/demo/no-show`
+Triggers the automated no-show escalation: no check-in, one call to the scheduled employee, no answer, then replacement cascade.
+
 ---
 
 ## Écran 1 — Disponibilités de l'extra

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { handleAbsenceMessage } from "@/lib/cascade/handleAbsenceMessage";
-import { setDemoStateFromAbsence } from "@/lib/demo/demoState";
+import { setDemoStateFromCascade } from "@/lib/demo/demoState";
 import { simulateDemoAbsence } from "@/lib/demo/simulateDemoAbsence";
 import { hasSupabaseConfig } from "@/lib/env";
 
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
     if (!hasSupabaseConfig()) {
       const result = simulateDemoAbsence(payload);
-      setDemoStateFromAbsence(result);
+      setDemoStateFromCascade(result);
 
       return Response.json(result);
     }

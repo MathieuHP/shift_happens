@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getDemoState, triggerDemoAbsence } from '../api'
+import { getDemoState, triggerDemoAbsence, triggerDemoNoShow } from '../api'
 import Badge from '../components/Badge'
 import Button from '../components/Button'
 import Card from '../components/Card'
@@ -18,6 +18,7 @@ export default function GerantCascade() {
   const [state, setState] = useState(null)
   const [error, setError] = useState('')
   const [triggering, setTriggering] = useState(false)
+  const [lastAction, setLastAction] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -35,14 +36,16 @@ export default function GerantCascade() {
     }
   }, [])
 
-  async function handleTrigger() {
+  async function runDemo(action, successMessage) {
     setTriggering(true)
     setError('')
+    setLastAction('')
     try {
-      await triggerDemoAbsence()
+      await action()
       setState(await getDemoState())
+      setLastAction(successMessage)
     } catch {
-      setError("Impossible de déclencher la cascade de démo.")
+      setError("Impossible de déclencher la cascade de démo. Vérifiez que `npm run backend:dev` tourne sur le port 3000.")
     }
     setTriggering(false)
   }
@@ -58,10 +61,31 @@ export default function GerantCascade() {
 
       {error && <p role="alert" className="rounded-[14px] bg-orange-clair p-3 font-medium text-orange-texte">{error}</p>}
 
-      <Button className="w-full" disabled={triggering} onClick={handleTrigger}>
-        <Icon name="phone" size={18} />
-        {triggering ? 'Cascade en cours…' : 'Simuler le SMS malade'}
-      </Button>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Button
+          className="w-full"
+          disabled={triggering}
+          onClick={() => runDemo(triggerDemoAbsence, 'SMS malade traité. Le dashboard a été mis à jour.')}
+        >
+          <Icon name="phone" size={18} />
+          {triggering ? 'Cascade en cours…' : 'Simuler le SMS malade'}
+        </Button>
+        <Button
+          variant="secondary"
+          className="w-full"
+          disabled={triggering}
+          onClick={() => runDemo(triggerDemoNoShow, 'No-show détecté et remplacé automatiquement.')}
+        >
+          <Icon name="phone" size={18} />
+          Simuler un no-show
+        </Button>
+      </div>
+
+      {lastAction && (
+        <p role="status" className="rounded-[14px] bg-vert-clair p-3 font-medium text-vert-texte">
+          {lastAction}
+        </p>
+      )}
 
       {state && (
         <>
@@ -70,6 +94,11 @@ export default function GerantCascade() {
             <p className="mt-1 font-titre text-2xl font-bold">
               {state.managerNotification ?? 'Aucune absence active.'}
             </p>
+            {state.currentCase && (
+              <p className="mt-2 text-sm font-semibold text-secondaire">
+                Cas: {state.currentCase.trigger === 'no_show' ? 'no-show automatique' : 'SMS malade'} · {state.updatedAt}
+              </p>
+            )}
           </Card>
 
           <section>

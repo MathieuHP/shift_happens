@@ -71,3 +71,5 @@ export const triggerDemoAbsence = () =>
     fromPhone: '+15550001001',
     body: 'I am sick and cannot make my 8 AM shift',
   })
+
+export const triggerDemoNoShow = () => request('/api/demo/no-show', 'POST')

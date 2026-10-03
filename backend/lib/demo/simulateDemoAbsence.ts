@@ -17,6 +17,8 @@ export function simulateDemoAbsence(input: { fromPhone: string; body: string }) 
       body: input.body,
     },
     candidateCount: 2,
+    replacementEmployee: "Thomas Reed",
+    trigger: "sick_sms" as const,
     cascade: {
       status: "resolved",
       attempted: true,

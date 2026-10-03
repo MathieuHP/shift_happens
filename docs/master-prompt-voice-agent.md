@@ -16,7 +16,7 @@ Copier-coller le bloc « PROMPT » ci-dessous dans Claude Code (ou un autre agen
 | `PUBLIC_BASE_URL` | `https://xxxx.ngrok.app` | URL publique du backend (les outils de l'agent doivent l'atteindre) |
 | `DEMO_PHONE_MATHIEU` / `DEMO_PHONE_KASH` | `+32…` | Numéros réels des deux extras de la démo (seuls extras du seed, `backend/lib/inapp/state.ts`) ; lus depuis `.env.local`, jamais dans git |
 | `DEMO_PHONE_OVERRIDE` | `+32…` | Si défini, TOUS les appels vont à ce numéro de test (jamais d'appel à un vrai extra pendant la démo) |
-| `CALL_TIMEOUT_SECONDS` | `45` | Délai avant de passer au candidat suivant |
+| `CALL_TIMEOUT_SECONDS` | `30` | Délai sans réponse avant de passer au candidat suivant. **Déjà géré côté serveur** (`advanceExpiredCalls` dans `backend/lib/inapp/service.ts`) : il suffit de lancer l'appel, de ne pas réimplémenter la minuterie |
 | `CONTACT_WINDOW_START` / `_END` | `08:00` / `21:00` | Plage horaire autorisée pour appeler (heure du restaurant) |
 | `VOICE_LANGUAGE` | `fr` | Langue de l'agent |
 
@@ -36,7 +36,7 @@ Tu es un ingénieur backend senior. Tu travailles dans le dépôt ShiftSaver (ha
 
 ### 1. Règles non négociables
 1. **Le serveur décide, pas l'IA.** L'éligibilité, l'ordre des candidats, l'affectation et les permissions restent du code déterministe (`respondToOffer` garantit un seul gagnant). L'agent vocal ne choisit jamais un destinataire et ne démarre jamais un appel.
-2. **Le backend lance chaque appel**, un seul appel actif par recherche, dans l'ordre d'éligibilité. Délai `CALL_TIMEOUT_SECONDS`, puis candidat suivant.
+2. **Le backend lance chaque appel**, un seul appel actif par recherche, dans l'ordre d'éligibilité. Délai `CALL_TIMEOUT_SECONDS` (30 s, minuterie déjà dans `advanceExpiredCalls`), puis candidat suivant.
 3. **Outils de l'agent étroits et authentifiés.** L'agent n'a que : `respond_to_offer(answer: "yes" | "no")`. Le serveur retrouve l'offre à partir du `conversation_id` mémorisé à la création de l'appel — **jamais** à partir d'un identifiant dit par le modèle. Chaque requête d'outil exige l'en-tête secret `VOICE_TOOL_SECRET`.
 4. **Consentement et horaires.** N'appelle que si `contact_consent_at` est renseigné **et** si l'heure est dans la plage `CONTACT_WINDOW_*`. Sinon, saute le candidat et journalise.
 5. **Transparence.** L'agent annonce dès la première phrase qu'il est un assistant automatique. Enregistrement audio et transcription **désactivés** ; ne stocke que les identifiants d'appel et le résultat.

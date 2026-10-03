@@ -30,5 +30,5 @@ export async function POST(request: Request) {
 
 // GET /api/absences -> la liste pour le gérant
 export async function GET() {
-  return handle(() => ({ items: listReports(getAppState()) }));
+  return handle(() => ({ items: listReports(getAppState(), new Date()) }));
 }

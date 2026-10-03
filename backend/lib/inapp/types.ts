@@ -26,10 +26,13 @@ export type ShiftReport = {
   eta: string | null; // heure d'arrivée estimée, ex. "18:20" (retard seulement)
   status: ReportStatus;
   accepted_employee_id: string | null;
+  // Délai (en secondes) avant de passer au candidat suivant quand un appel reste sans réponse. null = pas de minuterie.
+  call_timeout_seconds: number | null;
   created_at: string;
 };
 
-export type OfferStatus = "pending" | "accepted" | "declined" | "closed" | "rejected";
+// no_answer : l'appel est resté sans réponse pendant le délai prévu (le candidat perd son tour)
+export type OfferStatus = "pending" | "accepted" | "declined" | "closed" | "rejected" | "no_answer";
 
 export type Offer = {
   id: string;
@@ -37,6 +40,8 @@ export type Offer = {
   shift_id: string;
   employee_id: string;
   status: OfferStatus;
+  // Instant où l'appel à ce candidat a commencé (sert au délai). null = pas appelé pour l'instant.
+  called_at: string | null;
   created_at: string;
 };
 
@@ -46,6 +51,7 @@ export type AppEventType =
   | "no_show_detected"
   | "search_started"
   | "call_started"
+  | "call_no_answer"
   | "offer_declined"
   | "replacement_accepted"
   | "approval_requested"

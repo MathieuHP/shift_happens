@@ -4,6 +4,8 @@
 import { getEligibleCandidates } from "@/lib/matching/eligibleCandidates";
 import type { Shift } from "@/lib/types";
 
+import { optionalEnv } from "@/lib/env";
+
 import { localDate, localTime } from "./time";
 
 import {
@@ -77,6 +79,7 @@ export function reportShift(
     eta: input.kind === "delay" ? (input.eta ?? null) : null,
     status: input.kind === "delay" ? "delay_noted" : "open",
     accepted_employee_id: null,
+    call_timeout_seconds: null,
     created_at: now.toISOString(),
   };
   state.reports.push(report);
@@ -94,7 +97,15 @@ export function reportShift(
 
 // ---------- 2. Le gérant lance la recherche d'un remplaçant ----------
 
-export function findReplacement(state: AppState, reportId: string, now: Date) {
+// Délai par défaut avant de passer au candidat suivant quand un appel reste sans réponse (CALL_TIMEOUT_SECONDS).
+export function callTimeoutSeconds() {
+  const value = Number(optionalEnv("CALL_TIMEOUT_SECONDS"));
+  return Number.isFinite(value) && value > 0 ? value : 30;
+}
+
+// options.callTimeoutSeconds : active la minuterie d'appel pour cette recherche (null/absent = offres sans minuterie).
+export function findReplacement(state: AppState, reportId: string, now: Date, options: { callTimeoutSeconds?: number } = {}) {
+  advanceExpiredCalls(state, now);
   const report = findReport(state, reportId);
 
   if (report.status === "searching" || report.status === "pending_approval") {
@@ -132,10 +143,12 @@ export function findReplacement(state: AppState, reportId: string, now: Date) {
     shift_id: shift.id,
     employee_id: candidate.id,
     status: "pending",
+    called_at: null,
     created_at: now.toISOString(),
   }));
   state.offers.push(...offers);
   report.status = "searching";
+  report.call_timeout_seconds = options.callTimeoutSeconds ?? null;
   addEvent(state, report.id, "search_started", `Offre envoyée à ${candidates.map((c) => c.name).join(", puis ")}.`, now);
   announceNextCall(state, report.id, now);
 
@@ -143,10 +156,42 @@ export function findReplacement(state: AppState, reportId: string, now: Date) {
 }
 
 // Le prochain candidat à appeler = la première offre encore en attente (l'ordre est celui de l'éligibilité).
-// On le note dans la timeline ; l'appel vocal automatique se branchera ici.
+// On le note dans la timeline et on mémorise l'instant de l'appel pour le délai. L'appel vocal automatique se branchera ici.
 function announceNextCall(state: AppState, reportId: string, now: Date) {
   const next = state.offers.find((o) => o.report_id === reportId && o.status === "pending");
-  if (next) addEvent(state, reportId, "call_started", `Appel de ${employeeName(state, next.employee_id)}…`, now);
+  if (!next) return;
+  if (findReport(state, reportId).call_timeout_seconds) next.called_at = now.toISOString();
+  addEvent(state, reportId, "call_started", `Appel de ${employeeName(state, next.employee_id)}…`, now);
+}
+
+// Passe au candidat suivant quand un appel reste sans réponse pendant le délai prévu (30 s par défaut).
+// Fonction idempotente : on peut l'appeler à chaque lecture. Si plusieurs délais se sont écoulés depuis le
+// dernier appel (personne n'a consulté l'état), on les rejoue dans l'ordre, avec les vraies heures dans la timeline.
+export function advanceExpiredCalls(state: AppState, now: Date) {
+  for (const report of state.reports) {
+    const timeout = report.call_timeout_seconds;
+    if (report.status !== "searching" || !timeout) continue;
+
+    for (;;) {
+      const current = state.offers.find((o) => o.report_id === report.id && o.status === "pending");
+      if (!current?.called_at) break;
+      const expiresAt = new Date(new Date(current.called_at).getTime() + timeout * 1000);
+      if (expiresAt > now) break;
+
+      current.status = "no_answer";
+      const hasNext = state.offers.some((o) => o.report_id === report.id && o.status === "pending");
+      const name = employeeName(state, current.employee_id);
+      addEvent(state, report.id, "call_no_answer", `${name} n'a pas répondu (${timeout} s)${hasNext ? " : on passe au suivant." : "."}`, expiresAt);
+
+      if (hasNext) {
+        announceNextCall(state, report.id, expiresAt);
+      } else {
+        report.status = "unresolved";
+        addEvent(state, report.id, "no_replacement", "Personne n'a répondu : aucun remplaçant.", expiresAt);
+        break;
+      }
+    }
+  }
 }
 
 function offersOfReport(state: AppState, reportId: string) {
@@ -166,6 +211,7 @@ export function respondToOffer(
   input: { offerId: string; employeeId: string; accept: boolean },
   now: Date,
 ): OfferOutcome {
+  advanceExpiredCalls(state, now);
   const offer = state.offers.find((o) => o.id === input.offerId);
   if (!offer) throw new DomainError("offer_not_found", "Offre introuvable.", 404);
   if (offer.employee_id !== input.employeeId) {
@@ -260,6 +306,7 @@ export function rejectReplacement(state: AppState, reportId: string, now: Date) 
 
 // Les offres en attente d'un employé, au format de la carte "Shifts ouverts".
 export function listOffersForEmployee(state: AppState, employeeId: string, now: Date) {
+  advanceExpiredCalls(state, now);
   return state.offers
     .filter((offer) => offer.employee_id === employeeId && offer.status === "pending")
     .flatMap((offer) => {
@@ -305,7 +352,8 @@ export function listShiftsForEmployee(state: AppState, employeeId: string, now: 
 }
 
 // Les signalements pour le gérant, du plus récent au plus ancien.
-export function listReports(state: AppState) {
+export function listReports(state: AppState, now: Date = new Date()) {
+  advanceExpiredCalls(state, now);
   return [...state.reports]
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
     .map((report) => {

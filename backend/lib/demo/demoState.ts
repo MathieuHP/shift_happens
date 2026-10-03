@@ -2,6 +2,7 @@
 import { localTime, localTimeWithSeconds } from "@/lib/inapp/time";
 import { isTonightReport } from "@/lib/inapp/simulate";
 import { TONIGHT_SHIFT_PREFIX } from "@/lib/inapp/state";
+import { advanceExpiredCalls } from "@/lib/inapp/service";
 import type { AppState, ShiftReport } from "@/lib/inapp/types";
 
 export type DemoDashboardState = {
@@ -16,8 +17,10 @@ export type DemoDashboardState = {
     role: string;
     phone: string;
     // scheduled : en poste ce soir · available : extra disponible · queued : dans la file d'appel
-    // called : appelé en ce moment · declined / accepted : réponse reçue · absent : n'a pas pointé
-    status: "scheduled" | "available" | "queued" | "called" | "declined" | "accepted" | "absent";
+    // called : appelé en ce moment · no_answer : n'a pas répondu à temps · declined / accepted : réponse reçue · absent : n'a pas pointé
+    status: "scheduled" | "available" | "queued" | "called" | "no_answer" | "declined" | "accepted" | "absent";
+    // Seulement pour `called` : instant où l'appel expire (ISO), pour afficher le compte à rebours
+    callExpiresAt?: string;
   }>;
   schedule: Array<{
     id: string;
@@ -50,6 +53,7 @@ function latestTonightReport(app: AppState): ShiftReport | undefined {
 }
 
 export function buildDemoState(app: AppState, now: Date): DemoDashboardState {
+  advanceExpiredCalls(app, now); // fait passer au candidat suivant si un appel est resté sans réponse
   const name = (id: string | null) => app.employees.find((e) => e.id === id)?.name ?? null;
   const tonight = app.shifts.filter((s) => s.id.startsWith(TONIGHT_SHIFT_PREFIX));
   const report = latestTonightReport(app);
@@ -65,10 +69,15 @@ export function buildDemoState(app: AppState, now: Date): DemoDashboardState {
     const offer = offers.find((o) => o.employee_id === employee.id);
     if (offer) {
       if (offer.status === "accepted") status = "accepted";
+      else if (offer.status === "no_answer") status = "no_answer";
       else if (offer.status === "declined" || offer.status === "rejected") status = "declined";
       else if (offer.status === "pending") status = offer === firstPending ? "called" : "queued";
     }
-    return { id: employee.id, name: employee.name, role: roleLabel(employee.role), phone: employee.phone, status };
+    const callExpiresAt =
+      status === "called" && offer?.called_at && report?.call_timeout_seconds
+        ? new Date(new Date(offer.called_at).getTime() + report.call_timeout_seconds * 1000).toISOString()
+        : undefined;
+    return { id: employee.id, name: employee.name, role: roleLabel(employee.role), phone: employee.phone, status, callExpiresAt };
   });
 
   const schedule = tonight.map((s) => ({

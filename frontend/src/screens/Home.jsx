@@ -21,9 +21,9 @@ export default function Home() {
       <img
         src={logo}
         alt="Shift Happens"
-        width="176"
-        height="177"
-        className="mx-auto mb-8 h-44 w-44 rounded-[28px]"
+        width="340"
+        height="341"
+        className="mx-auto mb-8 h-auto w-full max-w-[340px] rounded-[32px]"
       />
 
       <h1 className="font-titre text-4xl font-bold">Coli Brasserie</h1>

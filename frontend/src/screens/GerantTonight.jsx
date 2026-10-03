@@ -4,6 +4,7 @@ import Badge from '../components/Badge'
 import Button from '../components/Button'
 import Card from '../components/Card'
 import Icon from '../components/Icon'
+import ReportsPanel from '../components/ReportsPanel'
 import { formatDayLong, formatHours, formatMoney, formatRate } from '../format'
 
 // Statut d'un membre de l'équipe -> texte + couleur de l'étiquette
@@ -47,6 +48,9 @@ export default function GerantTonight() {
         <h1 className="font-titre text-2xl font-bold">Ce soir</h1>
         <p className="text-secondaire capitalize">{formatDayLong(tonight.date)} · Chez Odile</p>
       </div>
+
+      {/* Absences et retards signalés par l'équipe (données du backend) */}
+      <ReportsPanel />
 
       {/* Shift à pourvoir */}
       <Card className="border-2 border-orange bg-orange-clair">

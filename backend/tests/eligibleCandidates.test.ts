@@ -9,10 +9,11 @@ function employee(input: Partial<Employee> & Pick<Employee, "id" | "name">): Emp
   return {
     restaurant_account_id: restaurantId,
     phone: `+1555${input.id}`,
-    role: "server",
-    skills: ["server"],
+    role: "salle",
+    skills: ["salle"],
     active: true,
     priority: 50,
+    contact_consent_at: "2026-01-01T00:00:00.000Z",
     ...input,
   };
 }
@@ -21,8 +22,8 @@ function shift(input: Partial<Shift> & Pick<Shift, "id">): Shift {
   return {
     restaurant_account_id: restaurantId,
     employee_id: null,
-    role: "server",
-    skill_required: "server",
+    role: "salle",
+    skill_required: "salle",
     starts_at: "2026-10-04T08:00:00.000Z",
     ends_at: "2026-10-04T16:00:00.000Z",
     status: "scheduled",
@@ -61,6 +62,85 @@ describe("getEligibleCandidates", () => {
     });
 
     expect(candidates.map((candidate) => candidate.id)).toEqual(["eligible"]);
+  });
+
+  it("keeps employees who only have shifts well after the target shift", () => {
+    const targetShift = shift({ id: "target", employee_id: "absent" });
+    const candidates = getEligibleCandidates({
+      absentEmployeeId: "absent",
+      shift: targetShift,
+      employees: [
+        employee({ id: "absent", name: "Paul" }),
+        employee({ id: "next-week", name: "Next week" }),
+        employee({ id: "tomorrow", name: "Tomorrow" }),
+      ],
+      shifts: [
+        targetShift,
+        // starts the next week
+        shift({
+          id: "next-week-shift",
+          employee_id: "next-week",
+          starts_at: "2026-10-11T08:00:00.000Z",
+          ends_at: "2026-10-11T16:00:00.000Z",
+        }),
+        // starts 17 h after the target shift ends (target ends at 16:00)
+        shift({
+          id: "tomorrow-shift",
+          employee_id: "tomorrow",
+          starts_at: "2026-10-05T09:00:00.000Z",
+          ends_at: "2026-10-05T17:00:00.000Z",
+        }),
+      ],
+    });
+
+    expect(candidates.map((candidate) => candidate.id).sort()).toEqual(["next-week", "tomorrow"]);
+  });
+
+  it("excludes employees whose next shift starts less than 11 h after the target shift ends", () => {
+    const targetShift = shift({ id: "target", employee_id: "absent" });
+    const candidates = getEligibleCandidates({
+      absentEmployeeId: "absent",
+      shift: targetShift,
+      employees: [
+        employee({ id: "absent", name: "Paul" }),
+        employee({ id: "too-close", name: "Too close" }),
+        employee({ id: "just-enough", name: "Just enough" }),
+      ],
+      shifts: [
+        targetShift,
+        // target ends 16:00 -> 02:59 is only 10 h 59 min later
+        shift({
+          id: "too-close-shift",
+          employee_id: "too-close",
+          starts_at: "2026-10-05T02:59:00.000Z",
+          ends_at: "2026-10-05T10:00:00.000Z",
+        }),
+        // exactly 11 h later
+        shift({
+          id: "just-enough-shift",
+          employee_id: "just-enough",
+          starts_at: "2026-10-05T03:00:00.000Z",
+          ends_at: "2026-10-05T10:00:00.000Z",
+        }),
+      ],
+    });
+
+    expect(candidates.map((candidate) => candidate.id)).toEqual(["just-enough"]);
+  });
+
+  it("excludes employees who have not consented to be contacted", () => {
+    const candidates = getEligibleCandidates({
+      absentEmployeeId: "absent",
+      shift: shift({ id: "target", employee_id: "absent" }),
+      employees: [
+        employee({ id: "absent", name: "Paul" }),
+        employee({ id: "no-consent", name: "No consent", contact_consent_at: null }),
+        employee({ id: "consented", name: "Consented" }),
+      ],
+      shifts: [],
+    });
+
+    expect(candidates.map((candidate) => candidate.id)).toEqual(["consented"]);
   });
 
   it("orders eligible employees by priority", () => {

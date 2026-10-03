@@ -57,7 +57,6 @@ export type Shift = {
   hourly_rate: number | null;
   status: ShiftStatus;
   replacement_for_employee_id?: string | null;
-  hourly_rate?: number;
 };
 
 export type AbsenceCase = {

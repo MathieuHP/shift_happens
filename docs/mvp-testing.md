@@ -32,6 +32,12 @@ curl -X POST http://localhost:3000/api/demo/absence \
   -d '{"fromPhone":"+15550001001","body":"I am sick and cannot make my 8 AM shift"}'
 ```
 
+4. Fetch the current dashboard state without retriggering the cascade:
+
+```bash
+curl http://localhost:3000/api/demo/state
+```
+
 If Supabase env vars are missing, this endpoint returns a deterministic simulated cascade. That is intentional so the MVP can be tested immediately.
 
 ## Live Supabase Setup

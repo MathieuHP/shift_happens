@@ -1,0 +1,28 @@
+import { z } from "zod";
+
+import { handleAbsenceMessage } from "@/lib/cascade/handleAbsenceMessage";
+
+const demoAbsenceSchema = z.object({
+  fromPhone: z.string().default("+15550001001"),
+  body: z.string().default("I'm sick and cannot make my 8 AM shift."),
+});
+
+export async function POST(request: Request) {
+  try {
+    const payload = demoAbsenceSchema.parse(await request.json().catch(() => ({})));
+    const result = await handleAbsenceMessage(payload);
+
+    return Response.json({
+      absenceCaseId: result.absenceCaseId,
+      absentEmployee: result.absentEmployee.name,
+      candidateCount: result.candidates.length,
+      cascade: result.cascade,
+    });
+  } catch (error) {
+    console.error("Demo absence failed", error);
+    return Response.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 },
+    );
+  }
+}

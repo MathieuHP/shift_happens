@@ -6,6 +6,9 @@
     "backend:dev": "npm --prefix backend run dev",
     "backend:build": "npm --prefix backend run build",
     "backend:lint": "npm --prefix backend run lint",
-    "backend:test": "npm --prefix backend run test"
+    "backend:test": "npm --prefix backend run test",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:lint": "npm --prefix frontend run lint"
   }
 }

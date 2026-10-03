@@ -1,61 +1,62 @@
-# User stories and acceptance criteria
+# Acceptance criteria per feature
 
-## Employee reports a callout by voice
-As an employee, I want to explain naturally that I cannot work a shift so the manager can find cover quickly.
+A feature is done when every line of its checklist passes. Tick them as you go.
 
-**Acceptance:** Employee calls the restaurant's Twilio number connected to the ElevenLabs Conversational AI agent. ElevenLabs greets/discloses automation and captures speech; Ingram returns typed intent; application validates employee, intent and shift against records; voice reads details back and permits correction; one pending case is created with a reference. Twilio `CallSid` and ElevenLabs `conversation_id` are correlated. No schedule change occurs. Ambiguity or low confidence triggers clarification/review.
+## F0 — Foundations
+As a developer, I need a stable base so later features only add behavior.
+- [ ] Seed script creates 1 restaurant, 1 manager, ≥8 employees (varied roles, skills, availability, consent), ≥6 upcoming shifts.
+- [ ] `AuditEvent`, `ProviderEvent` and idempotency-key storage exist and are used by every mutation.
+- [ ] Adapter interfaces `VoiceProvider`, `BillingProvider` exist with a mock implementation each; mocks are visibly labeled in the UI/logs.
 
-## Manager reviews and starts a search
-As a manager, I want explainable eligibility and control over who is contacted.
+## F1 — Case lifecycle and manager dashboard
+As a manager, I see callouts and move them through states.
+- [ ] Dashboard form creates a callout case for an employee + shift (stand-in for voice) in `received`/`needs_review`.
+- [ ] Case page shows employee, shift, deadline, verification flag, template summary and audit trail.
+- [ ] Only an authenticated manager can approve/reject; illegal transitions are rejected by the server.
 
-**Acceptance:** Dashboard shows shift, candidates, rule reasons and warnings. Eligibility was computed in application code. Only authenticated manager can authorize or reject outreach.
+## F2 — Eligibility
+As a manager, I want explainable candidates.
+- [ ] Each seeded scenario in the test plan returns the expected eligible/ineligible set with reason codes.
+- [ ] Output does not depend on anything but stored records (no external call).
 
-## Replacement accepts an offer
-As an eligible employee, I want a concise voice or simulated offer and a clear deadline.
+## F3 — Offers, hold, confirmation
+As a manager, I control who is contacted and who is assigned.
+- [ ] Approval (with optional recipient edit) starts exactly one live offer at a time; first candidate decline/timeout advances to the next.
+- [ ] Offer shows date, start/end, role and response deadline.
+- [ ] First acceptance stops the sequence and sets `accepted_pending_manager`; shift is not assigned.
+- [ ] Manager confirmation atomically assigns one employee, closes other offers, audits actor/time; repeat confirmation is rejected safely.
+- [ ] Two simultaneous acceptances yield one held acceptance.
 
-**Acceptance:** Offer includes date, start/end, role and response deadline. Application requests one outbound call through ElevenLabs Conversational AI's Twilio integration; the agent presents the offer and captures yes/no. Acceptance is recorded once and held in `accepted_pending_manager`; it does not assign the shift. App stores the returned ElevenLabs `conversation_id` and Twilio `CallSid`.
+## F4 — Urgency
+As a manager, I must not miss a callout.
+- [ ] Case creation triggers a notification (stub allowed: visible toast + log line).
+- [ ] An unapproved case triggers a reminder after the configured delay.
+- [ ] A case whose shift has started is flagged "past deadline" in the dashboard.
 
-## Manager confirms replacement
-As a manager, I want to confirm one replacement and close the case.
+## F5 — Inbound voice intake
+As an employee, I explain naturally that I cannot work.
+- [ ] Calling the Twilio number reaches the ElevenLabs agent; it states that it is automated.
+- [ ] Agent tools: lookup caller → list that employee's upcoming shifts → create pending case. The shift ID passed must be one the server returned for that employee.
+- [ ] Agent reads back employee, shift and intent; correction is possible; no promise of cover or approval.
+- [ ] Exactly one pending case is created, with a reference; replaying the tool call creates no duplicate.
+- [ ] Twilio `CallSid` and ElevenLabs `conversation_id` are stored on one `VoiceInteraction`.
+- [ ] Unknown caller → unverified case for manager; two unclear answers → callback offer / manager-review case.
 
-**Acceptance:** Confirmation atomically assigns one employee, closes other offers, records actor/time and notifies both parties. Repeated confirmation is rejected safely.
+## F6 — Stripe subscription and entitlement
+As a restaurant manager, I activate the product.
+- [ ] Test checkout links account to Stripe customer/subscription IDs.
+- [ ] Verified webhook updates subscription idempotently; replayed event has no second effect.
+- [ ] Inactive entitlement blocks new intake and outreach; existing cases remain readable and unchanged.
+- [ ] Browser redirect alone does not activate the account.
 
-## Restaurant subscribes
-As a restaurant manager, I want to activate ShiftVoice through a simple subscription.
+## F7 — Outbound voice offers
+As a candidate, I get a short call with the offer.
+- [ ] Backend persists a `CallAttempt` and idempotency key before calling ElevenLabs' Twilio outbound endpoint, then stores the returned IDs.
+- [ ] Agent presents date/time/role and records yes/no through a scoped tool bound to that offer.
+- [ ] Failure or no answer advances the sequence only after the outcome is resolved; the agent cannot pick recipients or start more calls.
 
-**Acceptance:** Test checkout creates/links a restaurant account to Stripe customer/subscription IDs. A verified webhook updates billing state idempotently. Dashboard displays entitlement and subscription status. Billing events do not alter shift cases or assignments.
+## F8 — Time-off request
+- [ ] A time-off intent creates a `TimeOffRequest` in `pending`; nothing is approved, no shift is touched.
 
-## Employee requests future time off
-The request is captured and recorded as pending only; no approval or schedule change is implied.
-
-## Roadmap — employee reports expected lateness
-As an employee who expects to arrive late, I want to report the affected shift and estimated arrival time before I arrive.
-
-**Acceptance:** App identifies the employee and upcoming shift, captures optional ETA, confirms the report, and alerts the manager. It does not label the employee absent or start replacement calls. The report suppresses the T−5 check call; if the ETA passes without check-in, manager receives an alert (automatic re-escalation is off by default).
-
-**Updated automation rule:** A delay notice received before the T−5 call suppresses the automated check-in call. The notice is shown to the manager with its ETA; it does not by itself start replacement outreach.
-
-## Roadmap — employee checks in by QR
-As an employee arriving at work, I want to scan the restaurant's QR code so the actual check-in time is recorded.
-
-**Acceptance:** Server validates employee, location, shift window and duplicate scans. The event records scan time; it is not treated as advance notice, proof of hours worked, or an automatic disciplinary finding. Late threshold and grace period are configured by the restaurant and shown to managers.
-
-## Roadmap — system checks on-shift employee and escalates
-As a restaurant manager, I want the system to check whether an employee is on the way shortly before a shift and start pre-authorized replacement calls if needed.
-
-**Acceptance:** Check-in opens at T−10. If the employee has not checked in or reported a delay by T−5, ElevenLabs Conversational AI calls the employee through Twilio once. “I’m on my way” or a confirmed ETA ends escalation. No answer, or “I will not come,” starts sequential Twilio calls through ElevenLabs to the manager-approved eligible list only if the restaurant enabled and authorized this policy. A replacement acceptance is held for manager confirmation. Every call is logged with both provider IDs.
-
-## Roadmap — owner reviews presence statistics
-As a restaurant owner, I want factual attendance and lateness statistics to see staffing patterns and data gaps.
-
-**Acceptance:** Dashboard shows scheduled shift times/duration, check-in coverage, manager-confirmed attendance, late arrivals and lateness duration, with filters by date/location. Every record includes provenance confidence (e.g. verified QR, employee self-report, unresolved/no data). Check-in alone is not reported as proof of completed hours. No aggregate opaque “trust score,” predictive reliability rating, discipline recommendation or protected-trait inference is produced.
-
-## Roadmap — manager plans a schedule from availability
-As a manager, I want employees to submit availability and leave requests, then review a draft schedule.
-
-**Acceptance:** Employees submit availability for a specific planning period. The system flags conflicts and generates a draft using deterministic role, skill, availability and rest/overlap constraints. Manager edits and publishes; time-off requests require an explicit manager decision. No schedule is published or employee assigned automatically.
-
-## Roadmap — extra worker receives accelerated pay (Phase 3)
-As an extra worker, I want access to my approved pay promptly after a completed shift.
-
-**Acceptance:** Completed attendance is reviewed; employer/payroll process provides a validated net-pay amount and confirms the payment date/treatment. Worker sees the amount, any applicable fee and expected arrival before consenting. An authorized manager/payroll role initiates one payout. The app shows pending/paid/failed status and a payroll reference; retries do not duplicate payment. The employer remains responsible for statutory payroll documents and corrections.
+## F9 — Portal and usage panel
+- [ ] Dashboard shows subscription status and a Customer Portal link.

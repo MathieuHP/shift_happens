@@ -1,0 +1,42 @@
+import { Routes, Route } from 'react-router-dom'
+import Layout from './components/Layout'
+import Home from './screens/Home'
+import ExtraDispos from './screens/ExtraDispos'
+import ExtraShifts from './screens/ExtraShifts'
+import ExtraGains from './screens/ExtraGains'
+import GerantCascade from './screens/GerantCascade'
+import GerantTonight from './screens/GerantTonight'
+import GerantPlanning from './screens/GerantPlanning'
+
+// Les onglets du bas, pour chaque rôle.
+const extraTabs = [
+  { to: '/extra/dispos', label: 'Dispos', icon: 'calendar' },
+  { to: '/extra/shifts', label: 'Shifts', icon: 'briefcase' },
+  { to: '/extra/gains', label: 'Gains', icon: 'wallet' },
+]
+
+const gerantTabs = [
+  { to: '/gerant', label: 'Cascade', icon: 'phone' },
+  { to: '/gerant/tonight', label: 'Ce soir', icon: 'moon' },
+  { to: '/gerant/planning', label: 'Planning', icon: 'grid' },
+]
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+
+      <Route element={<Layout tabs={extraTabs} />}>
+        <Route path="/extra/dispos" element={<ExtraDispos />} />
+        <Route path="/extra/shifts" element={<ExtraShifts />} />
+        <Route path="/extra/gains" element={<ExtraGains />} />
+      </Route>
+
+      <Route element={<Layout tabs={gerantTabs} />}>
+        <Route path="/gerant" element={<GerantCascade />} />
+        <Route path="/gerant/tonight" element={<GerantTonight />} />
+        <Route path="/gerant/planning" element={<GerantPlanning />} />
+      </Route>
+    </Routes>
+  )
+}

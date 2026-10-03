@@ -1,35 +1,33 @@
 # Product brief — ShiftVoice
 
 ## Problem and user
-Restaurant managers receive late employee callouts and manually search for qualified, available replacements. ShiftVoice captures one callout, coordinates an approved search, and holds the result for the manager.
+A restaurant employee who cannot make a shift usually phones or texts the manager, often minutes or hours before service. The manager then works through a mental list of people who might be qualified and free. ShiftVoice takes the callout by phone, structures it, and runs an approved, ordered search for cover while the manager keeps control.
+
+## Why voice (assumption to test, not a fact)
+Hospitality staff call in sick; they do not open a scheduling app. Existing tools (Deputy, Planday, Combo…) offer shift-swap/broadcast mostly via app or SMS push. Our bet: a phone call that is answered by a voice agent removes the app step on both sides (the absent employee and the replacement). During the demo we test this by measuring what is really saved: manager time from callout to a held acceptance. These are hypotheses, not proven savings.
 
 ## Product boundary
-`Employee reports a shift absence → system identifies the shift → manager approves outreach → eligible replacements are contacted → acceptance is held → manager confirms the replacement.`
+`Employee callout → identified shift → manager approves outreach → eligible replacements contacted → acceptance held → manager confirms.`
 
-The hackathon MVP remains this workflow. The product roadmap can add proactive lateness reporting and, later, availability collection and manager-led schedule drafting. It does not become payroll, legal-policy enforcement, or automatic staff assignment.
+It is not payroll, legal-policy enforcement, automatic staff assignment, or scheduling. Later phases are in `ROADMAP.md` and must not leak into the MVP.
 
-## Product roadmap extensions
-- **Phase 1 — lateness and no-show escalation:** ten minutes before shift start, the check-in window opens. Employee can report expected delay in the app at any time before arrival. If there is no delay notice or check-in by five minutes after that window opens (T−5), the system calls the scheduled employee to ask whether they are on the way. A confirmation stops escalation. No answer or a confirmed absence starts calls to the pre-approved replacement list, one at a time.
-- **Phase 1 — QR/check-in and attendance stats:** QR/check-in records actual arrival. Owner dashboard reports scheduled shifts, attendance confirmation, presence, lateness and an evidence-confidence label based on how each record was obtained. “Confidence” is data quality, never a personal trust/reliability score.
-- **Phase 2 — availability and leave planning:** employees submit availability and time-off requests for a planning period; manager reviews constraints and creates/publishes the schedule. “Doodle-like” means collecting availability, not automatically assigning shifts.
-- **Phase 3 — fast pay for extra shifts:** after a shift is completed and hours/payroll data are validated, the worker can receive an eligible wage advance or accelerated net-pay transfer. The employer/payroll process remains authoritative; ShiftVoice does not calculate legal payroll. This is not automatically “gross pay instantly at shift end.”
-- **Not in current hackathon MVP:** automated T−5 calls, replacement escalation, QR attendance, attendance analytics, schedule generation or leave approval. Keep live demo focused on callout-to-confirmed-replacement.
+## Principles
+1. The voice agent proposes; application code and the manager decide.
+2. Urgency is a first-class concept: every case has a deadline (shift start) and the manager is notified, not just shown a dashboard.
+3. Acceptance is not assignment.
+4. Billing never touches shift state.
+5. Every mock is labeled; every state transition, eligibility rule and entitlement check is real.
 
-## Product and hackathon value
-- ElevenLabs Conversational AI is the voice interface; Twilio supplies the restaurant phone number and call transport through ElevenLabs' native Twilio integration. Application tools remain on the ShiftVoice API.
-- Ingram inference converts speech into a proposed typed intent and concise summaries; application code validates every result.
-- Stripe test mode provisions the restaurant SaaS subscription and visibly controls account access.
-- The demo measures intake correctness, manager review time, and time to an accepted offer. These are hypotheses, not proven savings.
-- Later measures: early delay-notice lead time, late-arrival detection rate, availability response rate, and manager edits needed to publish a schedule.
-- Attendance measures: time from T−10 check-in opening to confirmation, no-show escalation rate, verified check-in coverage, lateness distribution and attendance-data confidence mix.
-- Phase 3 measures: time from approved payroll amount to worker receipt, payout failure/reversal rate, reconciliation exceptions and fees per payout.
-
-## MVP success
-- At least 90% of seeded test callouts resolve to the right employee, shift and action.
-- Server-side eligibility matches seeded rules in every acceptance test.
-- Manager can authorize outreach in under 30 seconds.
-- One acceptance is held pending manager confirmation; no duplicate assignment occurs.
-- Demo visibly completes Stripe test checkout, an Ingram structured inference, and an ElevenLabs voice interaction (or a clearly labeled provider-boundary mock).
+## Hackathon success (scripted, not statistical)
+We run a scripted set of 10 seeded callout calls/phrases and report the real counts. We do not claim a success rate beyond that.
+- Scripted callouts: correct employee/shift identified, or safely routed to manager review.
+- Eligibility output equals the expected result for every seeded acceptance test.
+- Manager can approve outreach in one action from the case screen.
+- Exactly one acceptance is held; no double assignment under a race test.
+- Demo visibly shows: Stripe test checkout → entitlement, an ElevenLabs voice interaction (or labeled mock), the full state machine to `filled`.
 
 ## Demo assumptions
-One restaurant account/location, one manager, seeded employee/shift data, one subscription plan, test phone numbers, and Stripe test mode. External adapters may be mocked after the documented 30-minute setup threshold, while application validation and state transitions remain real.
+One restaurant, one location, one manager, seeded employees/shifts, one plan, test phone numbers, Stripe test mode. Providers can be mocked behind adapters; the application logic cannot.
+
+## Pricing
+Hypothesis only. Anchor: cost of an uncovered or late-covered shift versus a monthly subscription. €99–€299/month is a placeholder to validate with real restaurant owners.

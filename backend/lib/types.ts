@@ -50,6 +50,8 @@ export type Shift = {
   starts_at: string;
   ends_at: string;
   status: ShiftStatus;
+  replacement_for_employee_id?: string | null;
+  hourly_rate?: number;
 };
 
 export type AbsenceCase = {

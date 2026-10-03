@@ -50,11 +50,11 @@ function fakeStripe(transfersCreate = vi.fn().mockResolvedValue({ id: "tr_1" }),
 let app: AppState;
 beforeEach(() => {
   app = createSeedState(now);
-  // Jade absente, Eli la remplace (shift-5 : 18:00–23:00 à 16 €/h = 80 €)
+  // Jade absente, Mathieu la remplace (shift-5 : 18:00–23:00 à 16 €/h = 80 €)
   const { report } = reportShift(app, { employeeId: "jade", shiftId: "shift-5", kind: "absence" }, now);
   findReplacement(app, report.id, now);
-  const offer = app.offers.find((o) => o.employee_id === "eli")!;
-  respondToOffer(app, { offerId: offer.id, employeeId: "eli", accept: true }, now);
+  const offer = app.offers.find((o) => o.employee_id === "mathieu")!;
+  respondToOffer(app, { offerId: offer.id, employeeId: "mathieu", accept: true }, now);
 });
 
 describe("syncPayables", () => {
@@ -65,7 +65,7 @@ describe("syncPayables", () => {
 
     expect(store.state.payables).toHaveLength(1);
     expect(store.state.payables[0]).toMatchObject({
-      employee_id: "eli",
+      employee_id: "mathieu",
       hours: 5,
       hourly_rate: 16,
       amount_cents: 8000,
@@ -87,11 +87,11 @@ describe("syncPayables", () => {
 describe("payout account", () => {
   it("is 'none' until onboarding starts, then 'pending' / 'ready' depending on Stripe", async () => {
     const store = memoryStore();
-    expect(await getPayoutAccountStatus({ stripe: fakeStripe().client, store }, "eli")).toEqual({ status: "none" });
+    expect(await getPayoutAccountStatus({ stripe: fakeStripe().client, store }, "mathieu")).toEqual({ status: "none" });
 
-    await createPayoutOnboarding({ stripe: fakeStripe().client, store, frontendUrl: "http://front" }, { id: "eli", name: "Eli", email: "eli@example.com" });
-    expect(await getPayoutAccountStatus({ stripe: fakeStripe(undefined, "restricted").client, store }, "eli")).toEqual({ status: "pending" });
-    expect(await getPayoutAccountStatus({ stripe: fakeStripe().client, store }, "eli")).toEqual({ status: "ready" });
+    await createPayoutOnboarding({ stripe: fakeStripe().client, store, frontendUrl: "http://front" }, { id: "mathieu", name: "Mathieu", email: "mathieu@example.com" });
+    expect(await getPayoutAccountStatus({ stripe: fakeStripe(undefined, "restricted").client, store }, "mathieu")).toEqual({ status: "pending" });
+    expect(await getPayoutAccountStatus({ stripe: fakeStripe().client, store }, "mathieu")).toEqual({ status: "ready" });
   });
 
   it("creates the connected account once and returns a hosted onboarding link", async () => {
@@ -99,15 +99,15 @@ describe("payout account", () => {
     const { client } = fakeStripe();
     const deps = { stripe: client, store, frontendUrl: "http://front" };
 
-    const first = await createPayoutOnboarding(deps, { id: "eli", name: "Eli", email: "eli@example.com" });
-    await createPayoutOnboarding(deps, { id: "eli", name: "Eli", email: "eli@example.com" });
+    const first = await createPayoutOnboarding(deps, { id: "mathieu", name: "Mathieu", email: "mathieu@example.com" });
+    await createPayoutOnboarding(deps, { id: "mathieu", name: "Mathieu", email: "mathieu@example.com" });
 
     expect(first.url).toBe("https://connect.stripe.test/onboard");
     expect(vi.mocked(client.v2.core.accounts.create)).toHaveBeenCalledTimes(1);
-    expect(store.state.accounts).toEqual({ eli: "acct_eli" });
+    expect(store.state.accounts).toEqual({ mathieu: "acct_eli" });
     expect(vi.mocked(client.v2.core.accounts.create).mock.calls[0][0]).toMatchObject({
       identity: { country: "be", entity_type: "individual" },
-      contact_email: "eli@example.com",
+      contact_email: "mathieu@example.com",
       dashboard: "express",
     });
   });
@@ -120,9 +120,9 @@ describe("onboarding in the shared test mode", () => {
     vi.mocked(client.v2.core.accountLinks.create).mockRejectedValue(new Error("Please switch to an account created in a sandbox to test."));
 
     await expect(
-      createPayoutOnboarding({ stripe: client, store, frontendUrl: "http://front" }, { id: "eli", name: "Eli", email: "eli@example.com" }),
+      createPayoutOnboarding({ stripe: client, store, frontendUrl: "http://front" }, { id: "mathieu", name: "Mathieu", email: "mathieu@example.com" }),
     ).rejects.toMatchObject({ code: "sandbox_required", status: 501 });
-    expect(store.state.accounts).toEqual({ eli: "acct_eli" });
+    expect(store.state.accounts).toEqual({ mathieu: "acct_eli" });
   });
 });
 
@@ -132,7 +132,7 @@ describe("payPayable", () => {
   async function prepared() {
     const store = memoryStore();
     syncPayables(app, store, now);
-    store.state.accounts = { eli: "acct_eli" };
+    store.state.accounts = { mathieu: "acct_eli" };
     return { store, id: store.state.payables[0].id };
   }
 
@@ -164,7 +164,7 @@ describe("payPayable", () => {
     store.state.accounts = {};
     await expect(payPayable({ stripe: fakeStripe().client, store }, id, options())).rejects.toThrow(/pas encore configuré/);
 
-    store.state.accounts = { eli: "acct_eli" };
+    store.state.accounts = { mathieu: "acct_eli" };
     await expect(payPayable({ stripe: fakeStripe(undefined, "restricted").client, store }, id, options())).rejects.toThrow(/pas encore validé/);
     expect(store.state.payables[0].status).toBe("to_validate");
   });
@@ -192,7 +192,7 @@ describe("payPayable", () => {
     store.state.accounts = {}; // personne n'a de compte -> échec, sans bloquer le reste
     const results = await payAll({ stripe: fakeStripe().client, store }, options());
 
-    expect(results).toEqual([expect.objectContaining({ ok: false, employee_name: "Eli" })]);
+    expect(results).toEqual([expect.objectContaining({ ok: false, employee_name: "Mathieu" })]);
   });
 });
 

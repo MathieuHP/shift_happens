@@ -1,9 +1,22 @@
+import { optionalEnv } from "@/lib/env";
 import type { Employee, Shift } from "@/lib/types";
 
 import type { AppState } from "./types";
 
 const GLOBAL_KEY = "__shiftsaver_inapp_state__";
 const RESTAURANT_ID = "chez-odile";
+
+// Numéro réel d'un participant de la démo, lu dans backend/.env.local (jamais écrit dans le dépôt).
+// Format international obligatoire (ex. +32470123456). Sinon : faux numéro, aucun appel possible.
+function demoPhone(envName: string, fallback: string) {
+  const value = optionalEnv(envName);
+  if (!value) return fallback;
+  if (!/^\+[1-9]\d{7,14}$/.test(value)) {
+    console.warn(`${envName} n'est pas au format international (+32…) : numéro ignoré.`);
+    return fallback;
+  }
+  return value;
+}
 
 function employee(
   id: string,
@@ -13,12 +26,13 @@ function employee(
   priority: number,
   now: Date,
   phoneIndex: number,
+  phone: string = `+3255500000${phoneIndex}`,
 ): Employee {
   return {
     id,
     restaurant_account_id: RESTAURANT_ID,
     name,
-    phone: `+3255500000${phoneIndex}`,
+    phone,
     role,
     skills,
     active: true,
@@ -68,9 +82,9 @@ export function createSeedState(now: Date): AppState {
       employee("lucie", "Lucie", "cuisine", ["cuisine"], 10, now, 3),
       employee("mehdi", "Mehdi", "cuisine", ["cuisine"], 20, now, 4),
       employee("jade", "Jade", "bar", ["bar"], 10, now, 5),
-      employee("sacha", "Sacha", "salle", ["salle", "bar"], 30, now, 6),
-      employee("noor", "Noor", "cuisine", ["cuisine"], 30, now, 7),
-      employee("eli", "Eli", "bar", ["bar"], 20, now, 8),
+      // Les deux seuls extras de la démo : les vraies personnes qui recevront les appels.
+      employee("mathieu", "Mathieu", "bar", ["bar", "salle"], 20, now, 6, demoPhone("DEMO_PHONE_MATHIEU", "+32555000006")),
+      employee("kash", "Kash", "salle", ["salle", "bar"], 30, now, 7, demoPhone("DEMO_PHONE_KASH", "+32555000007")),
     ],
     shifts: [
       shift("shift-1", "ines", "salle", tomorrow, [11, 30], [15, 30], 16),

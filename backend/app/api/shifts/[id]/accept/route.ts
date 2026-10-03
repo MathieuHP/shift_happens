@@ -6,7 +6,7 @@ import { getAppState } from "@/lib/inapp/state";
 
 const bodySchema = z.object({ employee_id: z.string().min(1) });
 
-// POST /api/shifts/{offer_id}/accept  corps : { "employee_id": "eli" }
+// POST /api/shifts/{offer_id}/accept  corps : { "employee_id": "mathieu" }
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   return handle(async () => {

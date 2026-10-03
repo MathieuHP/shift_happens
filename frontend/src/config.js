@@ -4,9 +4,8 @@ const KEY = 'shiftsaver.employee'
 
 // Les identifiants sont ceux du backend (backend/lib/inapp/state.ts).
 export const EMPLOYEES = [
-  { id: 'sacha', name: 'Sacha', label: 'Extra · Salle' },
-  { id: 'noor', name: 'Noor', label: 'Extra · Cuisine' },
-  { id: 'eli', name: 'Eli', label: 'Extra · Bar' },
+  { id: 'mathieu', name: 'Mathieu', label: 'Extra · Bar' },
+  { id: 'kash', name: 'Kash', label: 'Extra · Salle' },
   { id: 'ines', name: 'Inès', label: 'Employée · Salle' },
   { id: 'tom', name: 'Tom', label: 'Employé · Salle' },
   { id: 'lucie', name: 'Lucie', label: 'Employée · Cuisine' },
@@ -16,9 +15,9 @@ export const EMPLOYEES = [
 
 export function getCurrentEmployeeId() {
   try {
-    return localStorage.getItem(KEY) || 'sacha'
+    return localStorage.getItem(KEY) || 'mathieu'
   } catch {
-    return 'sacha' // localStorage peut être bloqué : on prend la valeur par défaut
+    return 'mathieu' // localStorage peut être bloqué : on prend la valeur par défaut
   }
 }
 

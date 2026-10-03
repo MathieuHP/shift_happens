@@ -67,9 +67,9 @@ export function getPlanning(weekStart) {
     { midi: [fixe('Inès', 'Salle'), fixe('Lucie', 'Cuisine')], soir: [fixe('Tom', 'Salle'), fixe('Mehdi', 'Cuisine'), fixe('Jade', 'Bar')] },
     { midi: [fixe('Inès', 'Salle'), fixe('Mehdi', 'Cuisine')], soir: [fixe('Tom', 'Salle'), fixe('Lucie', 'Cuisine'), aPourvoir('Bar')] },
     { midi: [fixe('Inès', 'Salle'), fixe('Mehdi', 'Cuisine')], soir: [fixe('Tom', 'Salle'), fixe('Lucie', 'Cuisine'), fixe('Jade', 'Bar')] },
-    { midi: [fixe('Inès', 'Salle'), fixe('Lucie', 'Cuisine')], soir: [fixe('Tom', 'Salle'), fixe('Mehdi', 'Cuisine'), fixe('Jade', 'Bar'), extra('Sacha', 'Salle')] },
-    { midi: [fixe('Inès', 'Salle'), fixe('Mehdi', 'Cuisine'), extra('Noor', 'Cuisine')], soir: [fixe('Tom', 'Salle'), fixe('Lucie', 'Cuisine'), fixe('Jade', 'Bar'), extra('Sacha', 'Salle'), aPourvoir('Cuisine')] },
-    { midi: [fixe('Inès', 'Salle'), fixe('Lucie', 'Cuisine'), extra('Eli', 'Bar')], soir: [fixe('Tom', 'Salle'), fixe('Mehdi', 'Cuisine'), aPourvoir('Bar')] },
+    { midi: [fixe('Inès', 'Salle'), fixe('Lucie', 'Cuisine')], soir: [fixe('Tom', 'Salle'), fixe('Mehdi', 'Cuisine'), fixe('Jade', 'Bar'), extra('Kash', 'Salle')] },
+    { midi: [fixe('Inès', 'Salle'), fixe('Mehdi', 'Cuisine'), extra('Kash', 'Salle')], soir: [fixe('Tom', 'Salle'), fixe('Lucie', 'Cuisine'), fixe('Jade', 'Bar'), extra('Mathieu', 'Bar'), aPourvoir('Cuisine')] },
+    { midi: [fixe('Inès', 'Salle'), fixe('Lucie', 'Cuisine'), extra('Mathieu', 'Bar')], soir: [fixe('Tom', 'Salle'), fixe('Mehdi', 'Cuisine'), aPourvoir('Bar')] },
   ]
   return {
     week_start: weekStart,
@@ -93,9 +93,8 @@ export function getTeam() {
       { id: 'e3', name: 'Lucie', role: 'Cuisine', type: 'fixe', hourly_rate: 17 },
       { id: 'e4', name: 'Mehdi', role: 'Cuisine', type: 'fixe', hourly_rate: 16 },
       { id: 'e5', name: 'Jade', role: 'Bar', type: 'fixe', hourly_rate: 16 },
-      { id: 'x1', name: 'Sacha', role: 'Salle', type: 'extra', hourly_rate: 16 },
-      { id: 'x2', name: 'Noor', role: 'Cuisine', type: 'extra', hourly_rate: 15 },
-      { id: 'x3', name: 'Eli', role: 'Bar', type: 'extra', hourly_rate: 15 },
+      { id: 'x1', name: 'Mathieu', role: 'Bar', type: 'extra', hourly_rate: 16 },
+      { id: 'x2', name: 'Kash', role: 'Salle', type: 'extra', hourly_rate: 16 },
     ],
   }
 }

@@ -5,7 +5,7 @@ import { getAppState } from "@/lib/inapp/state";
 import { syncPayables } from "@/lib/payouts/service";
 import { filePayoutsStore } from "@/lib/payouts/store";
 
-// GET /api/earnings?employee_id=eli -> gains de l'extra (virements reçus + shifts à venir)
+// GET /api/earnings?employee_id=mathieu -> gains de l'extra (virements reçus + shifts à venir)
 export async function GET(request: Request) {
   return handle(() => {
     const employeeId = z.string().min(1, "employee_id manquant").parse(new URL(request.url).searchParams.get("employee_id"));

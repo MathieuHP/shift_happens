@@ -5,6 +5,7 @@ export type ShiftStatus = "scheduled" | "vacant" | "covered" | "cancelled";
 export type AbsenceCaseStatus =
   | "open"
   | "calling"
+  | "accepted_pending_manager"
   | "resolved"
   | "unresolved";
 
@@ -15,7 +16,8 @@ export type CallAttemptStatus =
   | "declined"
   | "no_answer"
   | "failed"
-  | "completed";
+  | "completed"
+  | "closed";
 
 export type EventType =
   | "absence_reported"

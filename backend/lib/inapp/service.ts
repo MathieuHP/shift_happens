@@ -282,6 +282,12 @@ export function skipCall(state: AppState, offerId: string, reason: string, now: 
 }
 
 // Le fournisseur n'a pas pu lancer l'appel, ou l'a signalé comme échoué : on passe au suivant tout de suite.
+// Raison courte pour la timeline : une seule ligne, sans clé ni identifiant.
+function shortReason(reason: string) {
+  const oneLine = reason.replace(/\s+/g, " ").trim();
+  return oneLine.length > 140 ? `${oneLine.slice(0, 137)}…` : oneLine || "raison inconnue";
+}
+
 export function failCall(state: AppState, callId: string, reason: string, now: Date) {
   const call = state.calls.find((c) => c.id === callId);
   if (!call || !["dialing", "calling"].includes(call.status)) return false;
@@ -296,7 +302,8 @@ export function failCall(state: AppState, callId: string, reason: string, now: D
     {
       status: "no_answer",
       eventType: "call_failed",
-      message: (hasNext) => `L'appel vers ${name} a échoué${hasNext ? " : on passe au suivant." : "."}`,
+      // La raison (ex. « pays non autorisé chez Twilio ») est affichée pour pouvoir corriger vite en test.
+      message: (hasNext) => `L'appel vers ${name} a échoué (${shortReason(reason)})${hasNext ? " : on passe au suivant." : "."}`,
       noneLeft: NONE_REACHED,
     },
     now,

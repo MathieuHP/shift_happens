@@ -44,6 +44,7 @@ export type ElevenLabsVoiceProviderConfig = {
 
 type ElevenLabsOutboundCallResponse = {
   success: boolean;
+  message?: string | null;
   conversation_id?: string | null;
   callSid?: string | null;
 };
@@ -116,7 +117,8 @@ export class ElevenLabsVoiceProvider implements VoiceProvider {
 
     const result = (await response.json()) as ElevenLabsOutboundCallResponse;
     if (!result.success) {
-      throw new Error("ElevenLabs did not accept the outbound call request");
+      // ElevenLabs explique le refus dans `message` (ex. Twilio : pays non autorisé). On le garde pour la timeline.
+      throw new Error(result.message ? `ElevenLabs : ${result.message}` : "ElevenLabs did not accept the outbound call request");
     }
 
     return {

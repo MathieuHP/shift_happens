@@ -145,7 +145,7 @@ describe("failures and contact rules", () => {
 
     expect(requests.map((r) => r.toNumber)).toEqual([phone("kash"), phone("mathieu")]);
     expect(state().calls.map((c) => c.status)).toEqual(["failed", "calling"]);
-    expect(timeline()).toContain("call_failed: L'appel vers Kash a échoué : on passe au suivant.");
+    expect(timeline()).toContain("call_failed: L'appel vers Kash a échoué (numéro refusé par le fournisseur) : on passe au suivant.");
     expect(roster()).toMatchObject({ kash: "no_answer", mathieu: "called" });
   });
 

@@ -2,6 +2,11 @@ import { Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import ComingSoon from './components/ComingSoon'
 import Home from './screens/Home'
+import ExtraDispos from './screens/ExtraDispos'
+import ExtraShifts from './screens/ExtraShifts'
+import ExtraGains from './screens/ExtraGains'
+import GerantTonight from './screens/GerantTonight'
+import GerantPlanning from './screens/GerantPlanning'
 
 // Les onglets du bas, pour chaque rôle.
 const extraTabs = [
@@ -23,14 +28,14 @@ export default function App() {
       <Route path="/" element={<Home />} />
 
       <Route element={<Layout tabs={extraTabs} />}>
-        <Route path="/extra/dispos" element={<ComingSoon title="Disponibilités" />} />
-        <Route path="/extra/shifts" element={<ComingSoon title="Shifts ouverts" />} />
-        <Route path="/extra/gains" element={<ComingSoon title="Gains" />} />
+        <Route path="/extra/dispos" element={<ExtraDispos />} />
+        <Route path="/extra/shifts" element={<ExtraShifts />} />
+        <Route path="/extra/gains" element={<ExtraGains />} />
       </Route>
 
       <Route element={<Layout tabs={gerantTabs} />}>
-        <Route path="/gerant" element={<ComingSoon title="Ce soir" />} />
-        <Route path="/gerant/planning" element={<ComingSoon title="Planning de la semaine" />} />
+        <Route path="/gerant" element={<GerantTonight />} />
+        <Route path="/gerant/planning" element={<GerantPlanning />} />
         <Route path="/gerant/equipe" element={<ComingSoon title="Équipe" />} />
         <Route path="/gerant/paiements" element={<ComingSoon title="Paiements" />} />
       </Route>

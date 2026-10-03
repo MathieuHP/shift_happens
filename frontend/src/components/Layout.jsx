@@ -17,7 +17,7 @@ export default function Layout({ tabs }) {
       >
         <Outlet />
       </main>
-      <TabBar tabs={tabs} />
+      <TabBar tabs={tabs} wide={isWide} />
     </>
   )
 }

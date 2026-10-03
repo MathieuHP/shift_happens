@@ -19,6 +19,10 @@ npm run backend:build
 
 Backend-specific setup lives in `backend/README.md`.
 
+## Planning Docs
+
+Kash's planning package is preserved under `docs/`. The backend-specific adoption notes are in `docs/backend-execution-plan.md`.
+
 ## Branching
 
 Do not work directly on `main`. Backend work should happen on `backend-shiftsaver` or smaller backend feature branches.

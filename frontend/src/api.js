@@ -61,3 +61,11 @@ export const validateHours = () =>
 // Écran 5 — Gérant, planning
 export const getPlanning = (weekStart) =>
   call('/planning?week_start=' + weekStart, 'GET', undefined, () => mock.getPlanning(weekStart))
+
+// Écran 6 — Gérant, équipe
+export const getTeam = () =>
+  call('/team', 'GET', undefined, () => mock.getTeam())
+
+// Écran 7 — Gérant, paiements
+export const getPayments = () =>
+  call('/payments', 'GET', undefined, () => mock.getPayments())

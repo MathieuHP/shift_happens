@@ -1,12 +1,13 @@
 import { Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
-import ComingSoon from './components/ComingSoon'
 import Home from './screens/Home'
 import ExtraDispos from './screens/ExtraDispos'
 import ExtraShifts from './screens/ExtraShifts'
 import ExtraGains from './screens/ExtraGains'
 import GerantTonight from './screens/GerantTonight'
 import GerantPlanning from './screens/GerantPlanning'
+import GerantTeam from './screens/GerantTeam'
+import GerantPayments from './screens/GerantPayments'
 
 // Les onglets du bas, pour chaque rôle.
 const extraTabs = [
@@ -36,8 +37,8 @@ export default function App() {
       <Route element={<Layout tabs={gerantTabs} />}>
         <Route path="/gerant" element={<GerantTonight />} />
         <Route path="/gerant/planning" element={<GerantPlanning />} />
-        <Route path="/gerant/equipe" element={<ComingSoon title="Équipe" />} />
-        <Route path="/gerant/paiements" element={<ComingSoon title="Paiements" />} />
+        <Route path="/gerant/equipe" element={<GerantTeam />} />
+        <Route path="/gerant/paiements" element={<GerantPayments />} />
       </Route>
     </Routes>
   )

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { getAvailability, saveAvailability } from '../api'
 import Icon from '../components/Icon'
-import { addDays, formatDayLong, formatDayShort, formatWeek } from '../format'
+import WeekNav from '../components/WeekNav'
+import { addDays, formatDayLong, formatDayShort } from '../format'
 
 // Les 3 états d'une case. À chaque tap on passe à l'état suivant.
 // L'état est toujours indiqué par couleur + icône + texte.
@@ -71,25 +72,8 @@ export default function ExtraDispos() {
     <div>
       <h1 className="font-titre text-2xl font-bold">Mes disponibilités</h1>
 
-      {/* Navigation entre les semaines */}
-      <div className="mt-4 flex items-center justify-between">
-        <button
-          type="button"
-          aria-label="Semaine précédente"
-          onClick={() => changeWeek(-7)}
-          className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-bordure bg-white"
-        >
-          <Icon name="chevron-left" />
-        </button>
-        <p className="font-semibold">{formatWeek(weekStart)}</p>
-        <button
-          type="button"
-          aria-label="Semaine suivante"
-          onClick={() => changeWeek(7)}
-          className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-bordure bg-white"
-        >
-          <Icon name="chevron-right" />
-        </button>
+      <div className="mt-4">
+        <WeekNav weekStart={weekStart} onChange={changeWeek} />
       </div>
 
       {days === null ? (

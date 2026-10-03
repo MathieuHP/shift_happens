@@ -120,7 +120,7 @@ Sans corps. Le front rappelle ensuite `GET /tonight` (le statut doit alors valoi
 
 ---
 
-## Écran 5 — Gérant : Planning de la semaine
+## Écran 5 — Gérant : Planning de la semaine (navigation de semaine incluse)
 
 ### `GET /planning?week_start=2026-10-05`
 Une pastille (`midi` / `soir`) : `kind` vaut `fixe` (employé fixe), `extra`, ou `a_pourvoir` (alors `name` est `null`).
@@ -142,6 +142,36 @@ Le front compte lui-même les shifts à pourvoir et les extras. Le coût de main
         { "name": null, "role": "Bar", "kind": "a_pourvoir" }
       ]
     }
+  ]
+}
+```
+
+---
+
+## Écran 6 — Gérant : Équipe
+
+### `GET /team`
+`type` : `fixe` ou `extra`.
+```json
+{
+  "members": [
+    { "id": "e1", "name": "Inès", "role": "Salle", "type": "fixe", "hourly_rate": 16 },
+    { "id": "x1", "name": "Sacha", "role": "Salle", "type": "extra", "hourly_rate": 16 }
+  ]
+}
+```
+
+---
+
+## Écran 7 — Gérant : Paiements
+
+### `GET /payments`
+`status` : `pending` (heures pas encore validées) ou `paid`. Après `POST /tonight/validate-hours`, les lignes concernées doivent passer à `paid`.
+```json
+{
+  "items": [
+    { "id": "p1", "name": "Sacha", "label": "Salle · service de midi", "date": "2026-10-07", "amount": 64, "status": "pending" },
+    { "id": "p3", "name": "Noor", "label": "Cuisine · service du soir", "date": "2026-10-06", "amount": 82.5, "status": "paid" }
   ]
 }
 ```

@@ -59,6 +59,9 @@ describe("voice calls on the in-memory state", () => {
     expect(requests[0].toNumber).toBe(phone("kash"));
     expect(requests[0].idempotencyKey).toBe(`offer:${state().offers[0].id}`);
     expect(requests[0].dynamicVariables).toMatchObject({
+      greeting: "Bonjour", // variables du premier message de l'agent : sans elles ElevenLabs raccroche au décroché
+      user_name: "Kash",
+      agent_name: "Eleven",
       restaurant_name: "Coli Brasserie",
       employee_first_name: "Kash",
       role: "Bar",

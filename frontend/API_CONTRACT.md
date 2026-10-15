@@ -211,7 +211,7 @@ Le front compte lui-même les shifts à pourvoir et les extras. Le coût de main
 
 ## Stripe : abonnement et paiement des shifts (backend réel, mode test)
 
-Voir `docs/stripe-setup.md` pour la mise en place. Toutes ces routes sont dans `backend/app/api/`.
+Voir `documentation/stripe-setup.md` pour la mise en place. Toutes ces routes sont dans `backend/app/api/`.
 
 ### Abonnement du restaurant (50 €/mois)
 - `GET /api/billing/status` → `{ "status": "inactive|trialing|active|past_due|canceled", "entitled": true, "current_period_end": "2026-11-03T13:39:37.000Z", "has_customer": true }`. Mis à jour **uniquement** par les webhooks Stripe (le retour de la page de paiement n'active rien).

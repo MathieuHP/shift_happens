@@ -1,6 +1,6 @@
 // Paiement des shifts avec Stripe Connect (MODE TEST pour le hackathon).
 // Le restaurant est débité sur la plateforme ; ShiftSaver vire ensuite le montant au compte Stripe
-// de l'extra ("separate charges and transfers"). Ce n'est PAS de la paie légale : voir docs/ROADMAP.md.
+// de l'extra ("separate charges and transfers"). Ce n'est PAS de la paie légale : voir documentation/ROADMAP.md.
 import type Stripe from "stripe";
 
 import type { AppState } from "@/lib/inapp/types";
@@ -99,11 +99,11 @@ export async function createPayoutOnboarding(deps: Deps & { frontendUrl: string 
       },
     });
   } catch (error) {
-    // Stripe refuse ces liens dans le "mode test" partagé : il faut un sandbox (voir docs/stripe-setup.md).
+    // Stripe refuse ces liens dans le "mode test" partagé : il faut un sandbox (voir documentation/stripe-setup.md).
     if (error instanceof Error && /sandbox/i.test(error.message)) {
       throw new DomainError(
         "sandbox_required",
-        "Stripe n'autorise pas l'inscription des comptes de paiement dans le mode test partagé : utilisez les clés d'un sandbox Stripe (docs/stripe-setup.md).",
+        "Stripe n'autorise pas l'inscription des comptes de paiement dans le mode test partagé : utilisez les clés d'un sandbox Stripe (documentation/stripe-setup.md).",
         501,
       );
     }

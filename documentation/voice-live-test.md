@@ -23,7 +23,7 @@ Outil webhook `respond_to_offer` :
 - Méthode `POST`, URL : `https://<adresse-du-tunnel>/api/voice/respond`
 - En-têtes : `x-voice-secret` = la valeur de `VOICE_TOOL_SECRET` (`grep VOICE_TOOL_SECRET backend/.env.local`), `x-conversation-id` = `{{system__conversation_id}}`
 - Corps : `{ "answer": "yes" }` ou `{ "answer": "no" }`
-Le prompt de l'agent est dans `docs/elevenlabs-agent-config.md`. Ne pas activer l'enregistrement audio.
+Le prompt de l'agent est dans `documentation/elevenlabs-agent-config.md`. Ne pas activer l'enregistrement audio.
 
 ## 4. Premier test, seul
 Pour ne pas appeler Kash par erreur, mettre dans `backend/.env.local` : `DEMO_PHONE_OVERRIDE=<votre numéro>` (tous les appels vont alors à ce numéro), relancer le backend, puis :

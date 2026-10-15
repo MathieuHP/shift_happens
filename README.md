@@ -54,8 +54,8 @@ The current backend stores billing and payout state in local JSON files and demo
 
 ## Planning Docs
 
-Kash's planning package is preserved under `docs/`. The backend-specific adoption notes are in `docs/backend-execution-plan.md`.
-MVP test instructions are in `docs/mvp-testing.md`.
+Kash's planning package is preserved under `documentation/`. The backend-specific adoption notes are in `documentation/backend-execution-plan.md`.
+MVP test instructions are in `documentation/mvp-testing.md`.
 
 ## Branching
 
@@ -63,4 +63,4 @@ Do not work directly on `main`. Backend work should happen on `backend-shiftsave
 
 ## Product Documentation
 
-Product and feature docs live under `docs/`, including `docs/ROADMAP.md` for post-hackathon scope.
+Product and feature docs live under `documentation/`, including `documentation/ROADMAP.md` for post-hackathon scope.

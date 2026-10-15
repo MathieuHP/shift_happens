@@ -2,7 +2,7 @@ import { addHours, areIntervalsOverlapping, parseISO } from "date-fns";
 
 import type { Candidate, Employee, Shift } from "@/lib/types";
 
-// Repos minimum entre deux shifts (décision du 2026-10-03, voir docs/09-open-decisions.md).
+// Repos minimum entre deux shifts (décision du 2026-10-03, voir documentation/09-open-decisions.md).
 // À terme : paramètre du restaurant.
 const MIN_REST_HOURS = 11;
 

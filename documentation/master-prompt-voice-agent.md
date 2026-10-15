@@ -30,7 +30,7 @@ Tu es un ingénieur backend senior. Tu travailles dans le dépôt ShiftSaver (ha
 
 ### 0. À lire avant de coder
 - `backend/AGENTS.md` : cette version de Next.js a des changements incompatibles. Lis `backend/node_modules/next/dist/docs/` avant d'écrire une route (ex. `params` est une promesse).
-- `docs/09-open-decisions.md` (journal de décisions) et `docs/05-architecture.md` / `docs/07-risks.md` (principes voix, outils étroits, rien ne contourne le gérant). Les docs 04/05 décrivent déjà la voix ; l'in-app est la base actuelle.
+- `documentation/09-open-decisions.md` (journal de décisions) et `documentation/05-architecture.md` / `documentation/07-risks.md` (principes voix, outils étroits, rien ne contourne le gérant). Les docs 04/05 décrivent déjà la voix ; l'in-app est la base actuelle.
 - Code existant à **réutiliser, pas réécrire** : `backend/lib/inapp/service.ts` (`findReplacement`, `respondToOffer`, éligibilité), `backend/lib/inapp/state.ts` (état en mémoire), `backend/lib/inapp/http.ts` (`handle`), `backend/lib/security.ts`. L'ancien code SMS/voix (`backend/lib/cascade/`, `backend/lib/twilio/`, `backend/app/api/voice/`, `sms/`) est **obsolète** : ne t'y appuie pas, propose sa suppression dans une étape dédiée.
 - Doc ElevenLabs : intégration Twilio native, API `POST /v1/convai/twilio/outbound-call`, outils webhook. **Vérifie les noms exacts des champs dans la doc officielle** avant de coder (ne les devine pas).
 
@@ -58,7 +58,7 @@ Outil webhook `respond_to_offer` : `POST {{PUBLIC_BASE_URL}}/api/voice/respond`,
 4. **Route outil** `POST /api/voice/respond` (secret + `conversation_id` → `respondToOffer`). Tests : mauvais secret, conversation inconnue, doublon, offre fermée.
 5. **Route de statut** d'appel (fin, pas de réponse, échec) pour faire avancer la cascade, plus un déclencheur de délai (route appelée toutes les 15–30 s ou minuterie serveur).
 6. **Front** : dans le panneau gérant (`frontend/src/components/ReportsPanel.jsx`), afficher « Appel en cours : Prénom », « Pas de réponse », « Refus ». Mettre à jour `frontend/API_CONTRACT.md`.
-7. **Nettoyage** : supprimer l'ancien code SMS/voix devenu inutile (après accord de l'équipe) ; mettre à jour `docs/04`, `docs/05`, `docs/mvp-testing.md`.
+7. **Nettoyage** : supprimer l'ancien code SMS/voix devenu inutile (après accord de l'équipe) ; mettre à jour `documentation/04`, `documentation/05`, `documentation/mvp-testing.md`.
 
 ### 4. Critères d'acceptation
 - Test unitaire : 3 candidats, le 1er ne répond pas, le 2e refuse, le 3e accepte → shift affecté, appels dans l'ordre, jamais deux appels en même temps.

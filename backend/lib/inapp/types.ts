@@ -1,4 +1,4 @@
-// Types du flux "tout dans l'app" (voir docs/09-open-decisions.md).
+// Types du flux "tout dans l'app" (voir documentation/09-open-decisions.md).
 import type { Employee, Shift } from "@/lib/types";
 
 export type ReportKind = "absence" | "delay" | "no_show";

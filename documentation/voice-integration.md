@@ -1,6 +1,6 @@
 # Backend — appels vocaux pour les remplacements (état actuel)
 
-La voix est branchée sur l'état **en mémoire** de la démo « Remplacements » (pas de Supabase). Pour tester en direct : `docs/voice-live-test.md`. Prompt et outil de l'agent : `docs/elevenlabs-agent-config.md`.
+La voix est branchée sur l'état **en mémoire** de la démo « Remplacements » (pas de Supabase). Pour tester en direct : `documentation/voice-live-test.md`. Prompt et outil de l'agent : `documentation/elevenlabs-agent-config.md`.
 
 ## 1. Comment ça marche
 

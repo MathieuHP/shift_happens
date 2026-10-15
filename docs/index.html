@@ -92,6 +92,13 @@
       background: #fff; border: 1px solid var(--bordure); border-radius: 14px; padding: 20px;
     }
     .carte > p { color: var(--texte2); }
+    .scenario { border-left: 4px solid var(--vert); }
+    .scenario-label { color: var(--vert); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .faq { display: grid; gap: 10px; }
+    .faq details { background: #fff; border: 1px solid var(--bordure); border-radius: 14px; padding: 16px 18px; }
+    .faq summary { font-weight: 600; cursor: pointer; }
+    .faq details p { color: var(--texte2); margin: 12px 0 0; }
+    .note { color: var(--texte2); font-size: 0.95rem; }
 
     footer { padding: 24px 0 40px; color: var(--texte2); font-size: 0.9rem; }
     footer p { margin: 0 0 8px; }
@@ -131,10 +138,56 @@
       </ol>
     </section>
 
+    <section>
+      <div class="carte scenario">
+        <p class="scenario-label" data-i18n="exLabel">Exemple de situation</p>
+        <h2 data-i18n="exTitre">Un service qui commence bientôt</h2>
+        <p data-i18n="exTexte">À 17 h 42, un membre de l’équipe n’a pas pointé pour son service du soir. Le gérant signale l’absence. Shift Happens appelle d’abord la personne prévue, puis contacte les extras éligibles, un par un. Une personne accepte : le gérant reçoit la réponse et confirme le remplacement.</p>
+        <p class="note" data-i18n="exNote">Scénario illustratif : le déroulement dépend des règles et des disponibilités configurées par l’établissement.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 data-i18n="controleTitre">Vous gardez la maîtrise</h2>
+      <div class="carte">
+        <p data-i18n="controleTexte">Vous définissez les personnes éligibles à contacter et le fonctionnement du remplacement. Une acceptation ne devient pas automatiquement une affectation : vous pouvez garder la confirmation en main. Si personne n’est disponible, vous êtes averti et décidez de la suite.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 data-i18n="publicTitre">Pour les établissements bruxellois</h2>
+      <div class="carte">
+        <p data-i18n="publicTexte">Le pilote s’adresse aux restaurants de Bruxelles qui doivent gérer des absences de dernière minute et souhaitent tester une façon plus simple de trouver un remplacement. Nous échangeons avec chaque établissement intéressé pour comprendre son équipe, ses règles et ses besoins.</p>
+        <p data-i18n="publicNote">Le pilote est gratuit et prévu pour début 2027. Les places et les modalités seront précisées avec les établissements participants.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 data-i18n="faqTitre">Questions fréquentes</h2>
+      <div class="faq">
+        <details>
+          <summary data-i18n="faq1q">Dois-je changer d’outil de planning ?</summary>
+          <p data-i18n="faq1a">Le pilote se concentre sur la gestion d’une absence et la recherche d’un remplaçant. Nous discuterons de votre organisation actuelle avec vous avant de définir le fonctionnement du pilote.</p>
+        </details>
+        <details>
+          <summary data-i18n="faq2q">Qui reçoit les demandes de remplacement ?</summary>
+          <p data-i18n="faq2a">Les extras que l’établissement a rendus éligibles, selon les disponibilités et critères configurés. Ils sont contactés un par un.</p>
+        </details>
+        <details>
+          <summary data-i18n="faq3q">Que se passe-t-il si personne n’accepte ?</summary>
+          <p data-i18n="faq3a">Le gérant est averti qu’aucun remplaçant n’a accepté dans le délai prévu et choisit la suite à donner.</p>
+        </details>
+        <details>
+          <summary data-i18n="faq4q">Combien coûte le pilote ?</summary>
+          <p data-i18n="faq4a">Le pilote bruxellois est gratuit. Le tarif après le pilote reste à valider avec les restaurants.</p>
+        </details>
+      </div>
+    </section>
+
     <section id="formulaire">
       <div class="carte">
         <h2 data-i18n="pilote">Pilote gratuit à Bruxelles, début 2027</h2>
-        <p data-i18n="laisser">Laissez vos coordonnées, nous vous recontactons pour en parler.</p>
+        <p data-i18n="laisser">Parlez-nous de votre établissement et de votre façon de gérer les absences. Nous vous recontacterons pour voir si le pilote vous convient.</p>
 
         <!-- Formulaire Tally intégré (iframe simple, sans script ni cookie de notre côté) -->
         <iframe id="tally" src="https://tally.so/embed/e5Za6O?hideTitle=1&transparentBackground=1" title="Formulaire pilote Shift Happens" width="100%" height="520" loading="lazy" style="border:0"></iframe>
@@ -163,13 +216,31 @@
       fr: {
         titre: "Un shift saute ? On trouve le remplaçant.",
         sous: "Quand un employé ne vient pas, Shift Happens contacte des extras disponibles près de chez vous, un par un, jusqu'à ce que quelqu'un accepte. Vous gardez le dernier mot.",
-        cta: "Rejoindre le pilote à Bruxelles",
+        cta: "Parler du pilote à Bruxelles",
         comment: "Comment ça marche",
         e1: "Une absence est signalée, ou un employé n'a pas pointé.",
         e2: "Nous contactons par SMS des extras vérifiés, disponibles et proches.",
         e3: "Le premier qui accepte est confirmé ; vous validez.",
+        exLabel: "Exemple de situation",
+        exTitre: "Un service qui commence bientôt",
+        exTexte: "À 17 h 42, un membre de l’équipe n’a pas pointé pour son service du soir. Le gérant signale l’absence. Shift Happens appelle d’abord la personne prévue, puis contacte les extras éligibles, un par un. Une personne accepte : le gérant reçoit la réponse et confirme le remplacement.",
+        exNote: "Scénario illustratif : le déroulement dépend des règles et des disponibilités configurées par l’établissement.",
+        controleTitre: "Vous gardez la maîtrise",
+        controleTexte: "Vous définissez les personnes éligibles à contacter et le fonctionnement du remplacement. Une acceptation ne devient pas automatiquement une affectation : vous pouvez garder la confirmation en main. Si personne n’est disponible, vous êtes averti et décidez de la suite.",
+        publicTitre: "Pour les établissements bruxellois",
+        publicTexte: "Le pilote s’adresse aux restaurants de Bruxelles qui doivent gérer des absences de dernière minute et souhaitent tester une façon plus simple de trouver un remplacement. Nous échangeons avec chaque établissement intéressé pour comprendre son équipe, ses règles et ses besoins.",
+        publicNote: "Le pilote est gratuit et prévu pour début 2027. Les places et les modalités seront précisées avec les établissements participants.",
+        faqTitre: "Questions fréquentes",
+        faq1q: "Dois-je changer d’outil de planning ?",
+        faq1a: "Le pilote se concentre sur la gestion d’une absence et la recherche d’un remplaçant. Nous discuterons de votre organisation actuelle avec vous avant de définir le fonctionnement du pilote.",
+        faq2q: "Qui reçoit les demandes de remplacement ?",
+        faq2a: "Les extras que l’établissement a rendus éligibles, selon les disponibilités et critères configurés. Ils sont contactés un par un.",
+        faq3q: "Que se passe-t-il si personne n’accepte ?",
+        faq3a: "Le gérant est averti qu’aucun remplaçant n’a accepté dans le délai prévu et choisit la suite à donner.",
+        faq4q: "Combien coûte le pilote ?",
+        faq4a: "Le pilote bruxellois est gratuit. Le tarif après le pilote reste à valider avec les restaurants.",
         pilote: "Pilote gratuit à Bruxelles, début 2027",
-        laisser: "Laissez vos coordonnées, nous vous recontactons pour en parler.",
+        laisser: "Parlez-nous de votre établissement et de votre façon de gérer les absences. Nous vous recontacterons pour voir si le pilote vous convient.",
         secours: "Le formulaire ne s'affiche pas ? Ouvrez-le dans un nouvel onglet.",
         priv: "Vos coordonnées servent uniquement à vous recontacter au sujet du pilote. Pour les faire supprimer : {mail}.",
         meta: "Shift Happens contacte par SMS des extras disponibles près de chez vous quand un employé est absent. Rejoignez le pilote gratuit à Bruxelles.",
@@ -178,13 +249,31 @@
       nl: {
         titre: "Valt een shift weg? Wij vinden de vervanger.",
         sous: "Wanneer een medewerker niet komt opdagen, contacteert Shift Happens beschikbare extra's in uw buurt, één voor één, tot iemand aanvaardt. U behoudt het laatste woord.",
-        cta: "Doe mee aan de pilot in Brussel",
+        cta: "Praat over de pilot in Brussel",
         comment: "Hoe het werkt",
         e1: "Een afwezigheid wordt gemeld, of een medewerker heeft niet ingeklokt.",
         e2: "Wij contacteren via sms geverifieerde extra's die beschikbaar zijn en dichtbij wonen.",
         e3: "De eerste die aanvaardt, wordt bevestigd; u keurt goed.",
+        exLabel: "Voorbeeldsituatie",
+        exTitre: "De shift begint bijna",
+        exTexte: "Om 17.42 uur heeft een teamlid zich nog niet aangemeld voor de avonddienst. De manager meldt de afwezigheid. Shift Happens belt eerst de geplande medewerker en contacteert daarna de geschikte extra’s, één voor één. Iemand aanvaardt: de manager krijgt het antwoord en bevestigt de vervanging.",
+        exNote: "Illustratief scenario: het verloop hangt af van de regels en beschikbaarheden die de zaak instelt.",
+        controleTitre: "U houdt de controle",
+        controleTexte: "U bepaalt wie in aanmerking komt voor een contact en hoe de vervanging verloopt. Een aanvaarding wordt niet automatisch een toewijzing: u kunt zelf de bevestiging geven. Als niemand beschikbaar is, krijgt u een melding en beslist u wat de volgende stap is.",
+        publicTitre: "Voor Brusselse horecazaken",
+        publicTexte: "De pilot is bedoeld voor restaurants in Brussel die last-minute afwezigheden moeten opvangen en een eenvoudigere manier willen testen om vervanging te vinden. We bespreken met elke geïnteresseerde zaak het team, de regels en de behoeften.",
+        publicNote: "De pilot is gratis en gepland voor begin 2027. De plaatsen en voorwaarden worden samen met de deelnemende zaken bepaald.",
+        faqTitre: "Veelgestelde vragen",
+        faq1q: "Moet ik van planningssysteem veranderen?",
+        faq1a: "De pilot richt zich op het afhandelen van een afwezigheid en het zoeken naar vervanging. Voor we de pilot vastleggen, bespreken we hoe u vandaag werkt.",
+        faq2q: "Wie ontvangt de vraag om een shift over te nemen?",
+        faq2a: "De extra’s die volgens de ingestelde beschikbaarheid en criteria in aanmerking komen. Ze worden één voor één gecontacteerd.",
+        faq3q: "Wat als niemand aanvaardt?",
+        faq3a: "De manager krijgt bericht dat niemand binnen de voorziene tijd heeft aanvaard en beslist wat er daarna gebeurt.",
+        faq4q: "Wat kost de pilot?",
+        faq4a: "De Brusselse pilot is gratis. De prijs na de pilot moet nog met restaurants worden gevalideerd.",
         pilote: "Gratis pilot in Brussel, begin 2027",
-        laisser: "Laat uw gegevens achter, wij nemen contact met u op om erover te praten.",
+        laisser: "Vertel ons over uw zaak en hoe u afwezigheden opvangt. We nemen contact op om te bekijken of de pilot bij u past.",
         secours: "Verschijnt het formulier niet? Open het in een nieuw tabblad.",
         priv: "Uw gegevens worden enkel gebruikt om u te contacteren over de pilot. Om ze te laten verwijderen: {mail}.",
         meta: "Shift Happens contacteert via sms beschikbare extra's in uw buurt wanneer een medewerker afwezig is. Doe mee aan de gratis pilot in Brussel.",
@@ -193,13 +282,31 @@
       en: {
         titre: "A shift falls through? We find the replacement.",
         sous: "When an employee doesn't show up, Shift Happens contacts available extras near you, one by one, until someone accepts. You have the final say.",
-        cta: "Join the pilot in Brussels",
+        cta: "Talk to us about the Brussels pilot",
         comment: "How it works",
         e1: "An absence is reported, or an employee hasn't clocked in.",
         e2: "We text verified extras who are available and nearby.",
         e3: "The first to accept is confirmed; you approve.",
+        exLabel: "Example scenario",
+        exTitre: "A shift is about to start",
+        exTexte: "At 5:42 pm, a team member hasn’t checked in for the evening shift. The manager reports the absence. Shift Happens first calls the scheduled employee, then contacts eligible extras one by one. Someone accepts: the manager receives the response and confirms the cover.",
+        exNote: "Illustrative scenario: the process depends on the rules and availability configured by the restaurant.",
+        controleTitre: "You stay in control",
+        controleTexte: "You decide who is eligible to be contacted and how cover is handled. An acceptance does not automatically become an assignment: you can keep confirmation in your hands. If nobody is available, you are notified and decide what happens next.",
+        publicTitre: "For restaurants in Brussels",
+        publicTexte: "The pilot is for Brussels restaurants dealing with last-minute absences that want to try a simpler way to find cover. We’ll speak with each interested restaurant to understand its team, rules and needs.",
+        publicNote: "The pilot is free and planned for early 2027. Places and arrangements will be defined with participating restaurants.",
+        faqTitre: "Frequently asked questions",
+        faq1q: "Do I need to change my scheduling tool?",
+        faq1a: "The pilot focuses on handling an absence and finding cover. We’ll discuss how you work today before agreeing on how the pilot will fit.",
+        faq2q: "Who receives the cover requests?",
+        faq2a: "Extras the restaurant has marked as eligible, based on configured availability and criteria. They are contacted one at a time.",
+        faq3q: "What happens if nobody accepts?",
+        faq3a: "The manager is notified that nobody accepted within the set time and decides what to do next.",
+        faq4q: "How much does the pilot cost?",
+        faq4a: "The Brussels pilot is free. Pricing after the pilot still needs to be validated with restaurants.",
         pilote: "Free pilot in Brussels, early 2027",
-        laisser: "Leave your details and we'll get back to you to talk about it.",
+        laisser: "Tell us about your restaurant and how you handle absences. We’ll get back to you to see whether the pilot is a good fit.",
         secours: "Can't see the form? Open it in a new tab.",
         priv: "Your details are used only to contact you about the pilot. To have them deleted: {mail}.",
         meta: "Shift Happens texts available extras near you when an employee is absent. Join the free pilot in Brussels.",

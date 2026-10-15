@@ -44,6 +44,8 @@
 
     header { padding: 20px 0; }
     .barre { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .autre { font-size: 0.9rem; font-weight: 600; color: var(--vert); align-self: flex-end; padding: 10px 0; }
+    .autre:focus-visible { outline: 3px solid var(--texte); outline-offset: 2px; }
     .marque { display: flex; align-items: center; gap: 10px; }
     .langues { display: flex; justify-content: center; gap: 6px; }
     .langues button {
@@ -104,6 +106,7 @@
 <body>
   <header>
     <div class="conteneur barre">
+      <a class="autre" href="../">I'm a restaurant owner →</a>
       <div class="marque">
         <img src="../logo.svg" alt="Shift Happens logo">
       </div>

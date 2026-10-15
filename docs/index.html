@@ -44,6 +44,8 @@
 
     header { padding: 20px 0; }
     .barre { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .autre { font-size: 0.9rem; font-weight: 600; color: var(--vert); align-self: flex-end; padding: 10px 0; }
+    .autre:focus-visible { outline: 3px solid var(--texte); outline-offset: 2px; }
     .marque { display: flex; align-items: center; gap: 10px; }
     .langues { display: flex; justify-content: center; gap: 6px; }
     .langues button {
@@ -104,6 +106,7 @@
 <body>
   <header>
     <div class="conteneur barre">
+      <a class="autre" href="etudiants/" data-i18n="etu">Je suis étudiant →</a>
       <div class="marque">
         <img src="logo.svg" alt="Logo Shift Happens">
       </div>
@@ -173,7 +176,8 @@
         secours: "Le formulaire ne s'affiche pas ? Ouvrez-le dans un nouvel onglet.",
         priv: "Vos coordonnées servent uniquement à vous recontacter au sujet du pilote. Pour les faire supprimer : {mail}.",
         meta: "Shift Happens contacte par SMS des extras disponibles près de chez vous quand un employé est absent. Rejoignez le pilote gratuit à Bruxelles.",
-        form: "Formulaire pilote Shift Happens"
+        form: "Formulaire pilote Shift Happens",
+        etu: "Je suis étudiant →"
       },
       nl: {
         titre: "Valt een shift weg? Wij vinden de vervanger.",
@@ -188,7 +192,8 @@
         secours: "Verschijnt het formulier niet? Open het in een nieuw tabblad.",
         priv: "Uw gegevens worden enkel gebruikt om u te contacteren over de pilot. Om ze te laten verwijderen: {mail}.",
         meta: "Shift Happens contacteert via sms beschikbare extra's in uw buurt wanneer een medewerker afwezig is. Doe mee aan de gratis pilot in Brussel.",
-        form: "Pilotformulier Shift Happens"
+        form: "Pilotformulier Shift Happens",
+        etu: "Ik ben student →"
       },
       en: {
         titre: "A shift falls through? We find the replacement.",
@@ -203,7 +208,8 @@
         secours: "Can't see the form? Open it in a new tab.",
         priv: "Your details are used only to contact you about the pilot. To have them deleted: {mail}.",
         meta: "Shift Happens texts available extras near you when an employee is absent. Join the free pilot in Brussels.",
-        form: "Shift Happens pilot form"
+        form: "Shift Happens pilot form",
+        etu: "I'm a student →"
       }
     };
 

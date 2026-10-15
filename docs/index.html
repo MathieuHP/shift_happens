@@ -54,7 +54,7 @@
     }
     .langues button[aria-pressed="true"] { background: var(--vert); border-color: var(--vert); color: #fff; }
     .langues button:focus-visible { outline: 3px solid var(--texte); outline-offset: 2px; }
-    .marque img { width: 80px; height: 80px; }
+    .marque img { width: 240px; max-width: 100%; height: auto; }
     .nom { font-size: 1.2rem; white-space: nowrap; }
     /* Le « f » qui glisse : orange, penché, décalé vers le bas */
     .f {
@@ -106,7 +106,6 @@
     <div class="conteneur barre">
       <div class="marque">
         <img src="logo.svg" alt="Logo Shift Happens">
-        <span class="nom">Shi<span class="f">f</span>t Happens</span>
       </div>
       <div class="langues" role="group" aria-label="Langue / Taal / Language">
         <button type="button" data-lang="fr" aria-pressed="true">FR</button>

@@ -47,7 +47,7 @@
     .hero-view { min-height: 100svh; background: #285302; color: #fff; display: flex; flex-direction: column; justify-content: center; scroll-snap-align: start; scroll-snap-stop: always; }
     .hero-view header { width: 100%; }
     .barre { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-    .autre { font-size: 0.9rem; font-weight: 600; color: #fff; align-self: flex-start; padding: 10px 0; }
+    .autre { position: absolute; top: 72px; right: max(20px, calc((100vw - 720px) / 2)); font-size: 0.9rem; font-weight: 600; color: #fff; padding: 10px 0; }
     .autre:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
     .marque { display: flex; align-items: center; gap: 10px; }
     .langues { position: absolute; top: 20px; right: max(20px, calc((100vw - 720px) / 2)); display: flex; justify-content: center; gap: 6px; }
@@ -83,7 +83,8 @@
     .bouton:hover { filter: brightness(0.94); }
     .bouton:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 
-    main:not(.hero) > section { padding: 40px 0; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; scroll-snap-align: start; scroll-snap-stop: always; }
+    .view { min-height: 100svh; padding: 48px 0; display: flex; flex-direction: column; justify-content: center; gap: 28px; scroll-snap-align: start; scroll-snap-stop: always; }
+    .view > section { padding: 0; }
     .etapes { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
     .etapes li {
       display: flex; gap: 14px; align-items: flex-start;
@@ -112,7 +113,7 @@
     footer p { margin: 0 0 8px; }
 
     @media (min-width: 720px) { .hero { padding-top: 48px; padding-bottom: 56px; } }
-    @media (max-height: 700px) { .hero-view { min-height: 100svh; } main:not(.hero) > section { min-height: 100svh; } }
+    @media (max-height: 700px) { .hero-view, .view { min-height: 100svh; } }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   </style>
 </head>
@@ -142,6 +143,7 @@
   </div>
 
   <main class="conteneur">
+    <div class="view">
     <section>
       <h2 data-i18n="comment">Comment ça marche</h2>
       <ol class="etapes">
@@ -159,7 +161,9 @@
         <p class="note" data-i18n="exNote">Scénario illustratif : le déroulement dépend des règles et des disponibilités configurées par l’établissement.</p>
       </div>
     </section>
+    </div>
 
+    <div class="view">
     <section>
       <h2 data-i18n="controleTitre">Vous gardez la maîtrise</h2>
       <div class="carte">
@@ -174,7 +178,9 @@
         <p data-i18n="publicNote">Le pilote est gratuit et prévu pour début 2027. Les places et les modalités seront précisées avec les établissements participants.</p>
       </div>
     </section>
+    </div>
 
+    <div class="view">
     <section>
       <h2 data-i18n="faqTitre">Questions fréquentes</h2>
       <div class="faq">
@@ -196,7 +202,9 @@
         </details>
       </div>
     </section>
+    </div>
 
+    <div class="view">
     <section id="formulaire">
       <div class="carte">
         <h2 data-i18n="pilote">Pilote gratuit à Bruxelles, début 2027</h2>
@@ -207,13 +215,15 @@
         <p style="margin-top:12px"><a id="tally-lien" href="https://tally.so/r/e5Za6O" target="_blank" rel="noopener" data-i18n="secours">Le formulaire ne s'affiche pas ? Ouvrez-le dans un nouvel onglet.</a></p>
       </div>
     </section>
+    </div>
+  </main>
+
   <footer class="view">
     <div class="conteneur">
       <p data-i18n="priv">Vos coordonnées servent uniquement à vous recontacter au sujet du pilote. Pour les faire supprimer : <a href="mailto:shifthappens.be@gmail.com">shifthappens.be@gmail.com</a>.</p>
       <p>© 2026 Shift Happens</p>
     </div>
   </footer>
-  </main>
 
   <script>
     // Liens des formulaires Tally, un par langue.

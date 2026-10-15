@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shift Happens – Flexible shifts for students in Brussels</title>
+  <meta name="description" content="Join the Shift Happens student pool: get a text when a restaurant near you needs a replacement, and accept only the shifts that suit you. Brussels, early 2027.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Shift Happens – Flexible shifts for students in Brussels">
+  <meta property="og:description" content="Get a text when a restaurant near you needs a replacement. Accept only the shifts that suit you. Brussels, early 2027.">
+  <link rel="icon" type="image/svg+xml" href="../logo.svg">
+
+  <!-- Polices : seul service externe autorisé (Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* Couleurs définies une fois, réutilisées partout */
+    :root {
+      --fond: #F3F4EF;
+      --texte: #14201B;
+      --texte2: #56615B;
+      --bordure: #DDE0D8;
+      --vert: #0B6E4F;
+      --vert-clair: #CFE9DC;
+      --orange: #B93A0A;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--fond);
+      color: var(--texte);
+      font-family: "Instrument Sans", system-ui, sans-serif;
+      font-size: 1.0625rem;
+      line-height: 1.55;
+    }
+    .conteneur { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+    h1, h2, .nom { font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 700; }
+    h1 { font-size: clamp(2rem, 8vw, 3rem); line-height: 1.1; margin: 0 0 16px; }
+    h2 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 12px; }
+    p { margin: 0 0 16px; }
+
+    header { padding: 20px 0; }
+    .barre { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .marque { display: flex; align-items: center; gap: 10px; }
+    .langues { display: flex; justify-content: center; gap: 6px; }
+    .langues button {
+      min-width: 44px; min-height: 44px; padding: 0 10px;
+      background: #fff; color: var(--texte);
+      border: 1px solid var(--bordure); border-radius: 14px;
+      font: 600 0.9rem "Instrument Sans", system-ui, sans-serif; cursor: pointer;
+    }
+    .langues button[aria-pressed="true"] { background: var(--vert); border-color: var(--vert); color: #fff; }
+    .langues button:focus-visible { outline: 3px solid var(--texte); outline-offset: 2px; }
+    .marque img { display: block; width: 240px; max-width: 100%; height: auto; }
+    .nom { font-size: 1.2rem; white-space: nowrap; }
+    /* Le « f » qui glisse : orange, penché, décalé vers le bas */
+    .f {
+      display: inline-block;
+      color: var(--orange);
+      transform: rotate(16deg) translateY(0.12em);
+    }
+
+    .hero { padding: 24px 0 40px; }
+    .sous-titre { color: var(--texte2); font-size: 1.15rem; }
+    .bouton {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 48px; padding: 12px 24px;
+      background: var(--vert); color: #fff;
+      font: 600 1rem "Instrument Sans", system-ui, sans-serif;
+      border-radius: 14px; text-decoration: none;
+    }
+    .bouton:hover { filter: brightness(1.1); }
+    .bouton:focus-visible { outline: 3px solid var(--texte); outline-offset: 3px; }
+
+    section { padding: 24px 0; }
+    .etapes { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+    .etapes li {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: #fff; border: 1px solid var(--bordure); border-radius: 14px; padding: 16px;
+    }
+    .num {
+      flex: none; width: 36px; height: 36px; border-radius: 50%;
+      background: var(--vert-clair); color: var(--vert);
+      display: grid; place-items: center;
+      font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 700;
+    }
+
+    .carte {
+      background: #fff; border: 1px solid var(--bordure); border-radius: 14px; padding: 20px;
+    }
+    .carte > p { color: var(--texte2); }
+
+    footer { padding: 24px 0 40px; color: var(--texte2); font-size: 0.9rem; }
+    footer p { margin: 0 0 8px; }
+
+    @media (min-width: 720px) {
+      .hero { padding: 48px 0 56px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="conteneur barre">
+      <div class="marque">
+        <img src="../logo.svg" alt="Shift Happens logo">
+      </div>
+    </div>
+  </header>
+
+  <main class="conteneur">
+    <section class="hero">
+      <h1>Flexible shifts, straight to your phone.</h1>
+      <p class="sous-titre">When a restaurant near you needs a last-minute replacement, Shift Happens sends you a text. You accept the shifts that fit your schedule, and ignore the rest.</p>
+      <a class="bouton" href="#formulaire">Join the student pool</a>
+    </section>
+
+    <section>
+      <h2>How it works</h2>
+      <ol class="etapes">
+        <li><span class="num">1</span><span>You sign up and tell us when and where you are available.</span></li>
+        <li><span class="num">2</span><span>When a restaurant nearby needs someone, you get a text with the details.</span></li>
+        <li><span class="num">3</span><span>If you accept first, the shift is yours. If not, no pressure.</span></li>
+      </ol>
+    </section>
+
+    <section id="formulaire">
+      <div class="carte">
+        <h2>Brussels, early 2027</h2>
+        <p>Leave your details and we'll get in touch when the pilot starts.</p>
+
+        <!-- TODO : remplacer FORM_ID par l'identifiant du formulaire Tally étudiants (tally.so/r/FORM_ID) -->
+        <iframe src="https://tally.so/embed/FORM_ID?hideTitle=1&transparentBackground=1" title="Shift Happens student form" width="100%" height="520" loading="lazy" style="border:0"></iframe>
+        <p style="margin-top:12px"><a href="https://tally.so/r/FORM_ID" target="_blank" rel="noopener">Can't see the form? Open it in a new tab.</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="conteneur">
+      <p>Your details are used only to contact you about Shift Happens. To have them deleted: <a href="mailto:shifthappens.be@gmail.com">shifthappens.be@gmail.com</a>.</p>
+      <p>Are you a restaurant owner? <a href="../">Join the restaurant pilot</a>.</p>
+      <p>© 2026 Shift Happens</p>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,4 +1,4 @@
-# ShiftSaver
+# Shift Happens
 
 Autonomous HR assistant prototype for last-minute shift absences.
 

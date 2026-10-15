@@ -43,9 +43,9 @@
     p { margin: 0 0 16px; }
 
     header { padding: 20px 0; }
-    .barre { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+    .barre { display: flex; flex-direction: column; align-items: center; gap: 12px; }
     .marque { display: flex; align-items: center; gap: 10px; }
-    .langues { display: flex; gap: 6px; }
+    .langues { display: flex; justify-content: center; gap: 6px; }
     .langues button {
       min-width: 44px; min-height: 44px; padding: 0 10px;
       background: #fff; color: var(--texte);
@@ -54,7 +54,7 @@
     }
     .langues button[aria-pressed="true"] { background: var(--vert); border-color: var(--vert); color: #fff; }
     .langues button:focus-visible { outline: 3px solid var(--texte); outline-offset: 2px; }
-    .marque img { width: 240px; max-width: 100%; height: auto; }
+    .marque img { display: block; width: 240px; max-width: 100%; height: auto; }
     .nom { font-size: 1.2rem; white-space: nowrap; }
     /* Le « f » qui glisse : orange, penché, décalé vers le bas */
     .f {

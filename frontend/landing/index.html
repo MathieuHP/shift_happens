@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shift Happens – Un shift saute ? On trouve le remplaçant.</title>
+  <meta name="description" content="Shift Happens contacte par SMS des extras disponibles près de chez vous quand un employé est absent. Rejoignez le pilote gratuit à Bruxelles.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Shift Happens – Un shift saute ? On trouve le remplaçant.">
+  <meta property="og:description" content="Shift Happens contacte par SMS des extras disponibles près de chez vous, un par un, jusqu'à ce que quelqu'un accepte. Pilote gratuit à Bruxelles.">
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+
+  <!-- Polices : seul service externe autorisé (Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* Couleurs définies une fois, réutilisées partout */
+    :root {
+      --fond: #F3F4EF;
+      --texte: #14201B;
+      --texte2: #56615B;
+      --bordure: #DDE0D8;
+      --vert: #0B6E4F;
+      --vert-clair: #CFE9DC;
+      --orange: #B93A0A;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--fond);
+      color: var(--texte);
+      font-family: "Instrument Sans", system-ui, sans-serif;
+      font-size: 1.0625rem;
+      line-height: 1.55;
+    }
+    .conteneur { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+    h1, h2, .nom { font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 700; }
+    h1 { font-size: clamp(2rem, 8vw, 3rem); line-height: 1.1; margin: 0 0 16px; }
+    h2 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 12px; }
+    p { margin: 0 0 16px; }
+
+    header { padding: 20px 0; }
+    .barre { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .marque { display: flex; align-items: center; gap: 10px; }
+    .langues { display: flex; gap: 6px; }
+    .langues button {
+      min-width: 44px; min-height: 44px; padding: 0 10px;
+      background: #fff; color: var(--texte);
+      border: 1px solid var(--bordure); border-radius: 14px;
+      font: 600 0.9rem "Instrument Sans", system-ui, sans-serif; cursor: pointer;
+    }
+    .langues button[aria-pressed="true"] { background: var(--vert); border-color: var(--vert); color: #fff; }
+    .langues button:focus-visible { outline: 3px solid var(--texte); outline-offset: 2px; }
+    .marque img { width: 40px; height: 40px; }
+    .nom { font-size: 1.2rem; white-space: nowrap; }
+    /* Le « f » qui glisse : orange, penché, décalé vers le bas */
+    .f {
+      display: inline-block;
+      color: var(--orange);
+      transform: rotate(16deg) translateY(0.12em);
+    }
+
+    .hero { padding: 24px 0 40px; }
+    .sous-titre { color: var(--texte2); font-size: 1.15rem; }
+    .bouton {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 48px; padding: 12px 24px;
+      background: var(--vert); color: #fff;
+      font: 600 1rem "Instrument Sans", system-ui, sans-serif;
+      border-radius: 14px; text-decoration: none;
+    }
+    .bouton:hover { filter: brightness(1.1); }
+    .bouton:focus-visible { outline: 3px solid var(--texte); outline-offset: 3px; }
+
+    section { padding: 24px 0; }
+    .etapes { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+    .etapes li {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: #fff; border: 1px solid var(--bordure); border-radius: 14px; padding: 16px;
+    }
+    .num {
+      flex: none; width: 36px; height: 36px; border-radius: 50%;
+      background: var(--vert-clair); color: var(--vert);
+      display: grid; place-items: center;
+      font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 700;
+    }
+
+    .carte {
+      background: #fff; border: 1px solid var(--bordure); border-radius: 14px; padding: 20px;
+    }
+    .carte > p { color: var(--texte2); }
+
+    footer { padding: 24px 0 40px; color: var(--texte2); font-size: 0.9rem; }
+    footer p { margin: 0 0 8px; }
+
+    @media (min-width: 720px) {
+      .hero { padding: 48px 0 56px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="conteneur barre">
+      <div class="marque">
+        <img src="logo.svg" alt="Logo Shift Happens">
+        <span class="nom">Shi<span class="f">f</span>t Happens</span>
+      </div>
+      <div class="langues" role="group" aria-label="Langue / Taal / Language">
+        <button type="button" data-lang="fr" aria-pressed="true">FR</button>
+        <button type="button" data-lang="nl" aria-pressed="false">NL</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="conteneur">
+    <section class="hero">
+      <h1 data-i18n="titre">Un shift saute ? On trouve le remplaçant.</h1>
+      <p class="sous-titre" data-i18n="sous">Quand un employé ne vient pas, Shift Happens contacte des extras disponibles près de chez vous, un par un, jusqu'à ce que quelqu'un accepte. Vous gardez le dernier mot.</p>
+      <a class="bouton" href="#formulaire" data-i18n="cta">Rejoindre le pilote à Bruxelles</a>
+    </section>
+
+    <section>
+      <h2 data-i18n="comment">Comment ça marche</h2>
+      <ol class="etapes">
+        <li><span class="num">1</span><span data-i18n="e1">Une absence est signalée, ou un employé n'a pas pointé.</span></li>
+        <li><span class="num">2</span><span data-i18n="e2">Nous contactons par SMS des extras vérifiés, disponibles et proches.</span></li>
+        <li><span class="num">3</span><span data-i18n="e3">Le premier qui accepte est confirmé ; vous validez.</span></li>
+      </ol>
+    </section>
+
+    <section id="formulaire">
+      <div class="carte">
+        <h2 data-i18n="pilote">Pilote gratuit à Bruxelles, début 2027</h2>
+        <p data-i18n="laisser">Laissez vos coordonnées, nous vous recontactons pour en parler.</p>
+
+        <!-- Formulaire Tally intégré (iframe simple, sans script ni cookie de notre côté) -->
+        <iframe id="tally" src="https://tally.so/embed/Qo2RP1?hideTitle=1&transparentBackground=1" title="Formulaire pilote Shift Happens" width="100%" height="520" loading="lazy" style="border:0"></iframe>
+        <p style="margin-top:12px"><a id="tally-lien" href="https://tally.so/r/Qo2RP1" target="_blank" rel="noopener" data-i18n="secours">Le formulaire ne s'affiche pas ? Ouvrez-le dans un nouvel onglet.</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="conteneur">
+      <p data-i18n="priv">Vos coordonnées servent uniquement à vous recontacter au sujet du pilote. Pour les faire supprimer : <a href="mailto:shifthappens.be@gmail.com">shifthappens.be@gmail.com</a>.</p>
+      <p>© 2026 Shift Happens</p>
+    </div>
+  </footer>
+
+  <script>
+    // Liens des formulaires Tally, un par langue.
+    // TODO : remplacer les deux null par les liens NL et EN quand ils sont prêts.
+    var FORMS = {
+      fr: "https://tally.so/r/Qo2RP1",
+      nl: null,
+      en: null
+    };
+    var MAIL = '<a href="mailto:shifthappens.be@gmail.com">shifthappens.be@gmail.com</a>';
+
+    var T = {
+      fr: {
+        titre: "Un shift saute ? On trouve le remplaçant.",
+        sous: "Quand un employé ne vient pas, Shift Happens contacte des extras disponibles près de chez vous, un par un, jusqu'à ce que quelqu'un accepte. Vous gardez le dernier mot.",
+        cta: "Rejoindre le pilote à Bruxelles",
+        comment: "Comment ça marche",
+        e1: "Une absence est signalée, ou un employé n'a pas pointé.",
+        e2: "Nous contactons par SMS des extras vérifiés, disponibles et proches.",
+        e3: "Le premier qui accepte est confirmé ; vous validez.",
+        pilote: "Pilote gratuit à Bruxelles, début 2027",
+        laisser: "Laissez vos coordonnées, nous vous recontactons pour en parler.",
+        secours: "Le formulaire ne s'affiche pas ? Ouvrez-le dans un nouvel onglet.",
+        priv: "Vos coordonnées servent uniquement à vous recontacter au sujet du pilote. Pour les faire supprimer : {mail}.",
+        meta: "Shift Happens contacte par SMS des extras disponibles près de chez vous quand un employé est absent. Rejoignez le pilote gratuit à Bruxelles.",
+        form: "Formulaire pilote Shift Happens"
+      },
+      nl: {
+        titre: "Valt een shift weg? Wij vinden de vervanger.",
+        sous: "Wanneer een medewerker niet komt opdagen, contacteert Shift Happens beschikbare extra's in uw buurt, één voor één, tot iemand aanvaardt. U behoudt het laatste woord.",
+        cta: "Doe mee aan de pilot in Brussel",
+        comment: "Hoe het werkt",
+        e1: "Een afwezigheid wordt gemeld, of een medewerker heeft niet ingeklokt.",
+        e2: "Wij contacteren via sms geverifieerde extra's die beschikbaar zijn en dichtbij wonen.",
+        e3: "De eerste die aanvaardt, wordt bevestigd; u keurt goed.",
+        pilote: "Gratis pilot in Brussel, begin 2027",
+        laisser: "Laat uw gegevens achter, wij nemen contact met u op om erover te praten.",
+        secours: "Verschijnt het formulier niet? Open het in een nieuw tabblad.",
+        priv: "Uw gegevens worden enkel gebruikt om u te contacteren over de pilot. Om ze te laten verwijderen: {mail}.",
+        meta: "Shift Happens contacteert via sms beschikbare extra's in uw buurt wanneer een medewerker afwezig is. Doe mee aan de gratis pilot in Brussel.",
+        form: "Pilotformulier Shift Happens"
+      },
+      en: {
+        titre: "A shift falls through? We find the replacement.",
+        sous: "When an employee doesn't show up, Shift Happens contacts available extras near you, one by one, until someone accepts. You have the final say.",
+        cta: "Join the pilot in Brussels",
+        comment: "How it works",
+        e1: "An absence is reported, or an employee hasn't clocked in.",
+        e2: "We text verified extras who are available and nearby.",
+        e3: "The first to accept is confirmed; you approve.",
+        pilote: "Free pilot in Brussels, early 2027",
+        laisser: "Leave your details and we'll get back to you to talk about it.",
+        secours: "Can't see the form? Open it in a new tab.",
+        priv: "Your details are used only to contact you about the pilot. To have them deleted: {mail}.",
+        meta: "Shift Happens texts available extras near you when an employee is absent. Join the free pilot in Brussels.",
+        form: "Shift Happens pilot form"
+      }
+    };
+
+    function setLang(lang) {
+      if (!T[lang]) lang = "fr";
+      var t = T[lang];
+      document.documentElement.lang = lang;
+      document.title = "Shift Happens – " + t.titre;
+      document.querySelector('meta[name="description"]').content = t.meta;
+      document.querySelector('meta[property="og:title"]').content = document.title;
+      document.querySelector('meta[property="og:description"]').content = t.meta;
+
+      document.querySelectorAll("[data-i18n]").forEach(function (el) {
+        var txt = t[el.dataset.i18n];
+        if (el.dataset.i18n === "priv") el.innerHTML = txt.replace("{mail}", MAIL);
+        else el.textContent = txt;
+      });
+
+      // Formulaire de la langue, ou français tant que le lien n'existe pas
+      var url = FORMS[lang] || FORMS.fr;
+      var iframe = document.getElementById("tally");
+      var embed = url.replace("/r/", "/embed/") + "?hideTitle=1&transparentBackground=1";
+      if (iframe.getAttribute("src") !== embed) iframe.setAttribute("src", embed);
+      iframe.title = t.form;
+      document.getElementById("tally-lien").href = url;
+
+      document.querySelectorAll(".langues button").forEach(function (b) {
+        b.setAttribute("aria-pressed", b.dataset.lang === lang ? "true" : "false");
+      });
+    }
+
+    document.querySelectorAll(".langues button").forEach(function (b) {
+      b.addEventListener("click", function () { setLang(b.dataset.lang); });
+    });
+
+    // Langue de départ : ?lang=nl dans l'adresse, sinon langue du navigateur, sinon français
+    var param = new URLSearchParams(location.search).get("lang");
+    var nav = (navigator.language || "fr").slice(0, 2);
+    setLang(param || nav);
+  </script>
+</body>
+</html>

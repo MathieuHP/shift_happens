@@ -47,10 +47,10 @@
     .hero-view { min-height: 100svh; background: #285302; color: #fff; display: flex; flex-direction: column; justify-content: center; scroll-snap-align: start; scroll-snap-stop: always; }
     .hero-view header { width: 100%; }
     .barre { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-    .autre { font-size: 0.9rem; font-weight: 600; color: #fff; align-self: flex-end; padding: 10px 0; }
+    .autre { font-size: 0.9rem; font-weight: 600; color: #fff; align-self: flex-start; padding: 10px 0; }
     .autre:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
     .marque { display: flex; align-items: center; gap: 10px; }
-    .langues { display: flex; justify-content: center; gap: 6px; }
+    .langues { position: absolute; top: 20px; right: max(20px, calc((100vw - 720px) / 2)); display: flex; justify-content: center; gap: 6px; }
     .langues button {
       min-width: 44px; min-height: 44px; padding: 0 10px;
       background: #fff; color: var(--texte);
@@ -69,6 +69,7 @@
     }
 
     .hero { padding: 24px 20px 40px; width: 100%; }
+    main.hero { padding: 0; }
     .hero.conteneur { max-width: 760px; }
     .sous-titre { color: #F3F4EF; font-size: 1.15rem; }
     .bouton {

@@ -27,7 +27,7 @@
       --orange: #B93A0A;
     }
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; scroll-snap-type: y mandatory; }
     body {
       margin: 0;
       background: var(--fond);
@@ -43,9 +43,10 @@
     p { margin: 0 0 16px; }
 
     header { padding: 20px 0; }
+    .hero-view { min-height: 100svh; background: #285302; color: #fff; display: flex; flex-direction: column; justify-content: center; scroll-snap-align: start; scroll-snap-stop: always; }
     .barre { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-    .autre { font-size: 0.9rem; font-weight: 600; color: var(--vert); align-self: flex-end; padding: 10px 0; }
-    .autre:focus-visible { outline: 3px solid var(--texte); outline-offset: 2px; }
+    .autre { font-size: 0.9rem; font-weight: 600; color: #fff; align-self: flex-start; padding: 10px 0; }
+    .autre:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
     .marque { display: flex; align-items: center; gap: 10px; }
     .langues { display: flex; justify-content: center; gap: 6px; }
     .langues button {
@@ -65,8 +66,10 @@
       transform: rotate(16deg) translateY(0.12em);
     }
 
-    .hero { padding: 24px 0 40px; }
-    .sous-titre { color: var(--texte2); font-size: 1.15rem; }
+    .hero { padding: 24px 20px 40px; width: 100%; }
+    main.hero { padding: 0; }
+    .hero.conteneur { max-width: 760px; }
+    .sous-titre { color: #F3F4EF; font-size: 1.15rem; }
     .bouton {
       display: inline-flex; align-items: center; justify-content: center;
       min-height: 48px; padding: 12px 24px;
@@ -74,10 +77,11 @@
       font: 600 1rem "Instrument Sans", system-ui, sans-serif;
       border-radius: 14px; text-decoration: none;
     }
-    .bouton:hover { filter: brightness(1.1); }
-    .bouton:focus-visible { outline: 3px solid var(--texte); outline-offset: 3px; }
+    .bouton { background: #fff; color: #214500; }
+    .bouton:hover { filter: brightness(0.94); }
+    .bouton:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 
-    section { padding: 24px 0; }
+    main:not(.hero) > section { padding: 40px 0; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; scroll-snap-align: start; scroll-snap-stop: always; }
     .etapes { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
     .etapes li {
       display: flex; gap: 14px; align-items: flex-start;
@@ -96,14 +100,15 @@
     .carte > p { color: var(--texte2); }
 
     footer { padding: 24px 0 40px; color: var(--texte2); font-size: 0.9rem; }
+    footer { min-height: 35svh; scroll-snap-align: start; }
     footer p { margin: 0 0 8px; }
 
-    @media (min-width: 720px) {
-      .hero { padding: 48px 0 56px; }
-    }
+    @media (min-width: 720px) { .hero { padding-top: 48px; padding-bottom: 56px; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   </style>
 </head>
 <body>
+  <div class="hero-view">
   <header>
     <div class="conteneur barre">
       <a class="autre" href="../">I'm a restaurant owner →</a>
@@ -113,13 +118,17 @@
     </div>
   </header>
 
-  <main class="conteneur">
-    <section class="hero">
+  <main class="hero">
+    <section class="hero conteneur">
       <h1>Flexible shifts, straight to your phone.</h1>
       <p class="sous-titre">When a restaurant near you needs a last-minute replacement, Shift Happens sends you a text. You accept the shifts that fit your schedule, and ignore the rest.</p>
       <a class="bouton" href="#formulaire">Join the student pool</a>
     </section>
 
+  </main>
+  </div>
+
+  <main class="conteneur">
     <section>
       <h2>How it works</h2>
       <ol class="etapes">

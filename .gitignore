@@ -52,3 +52,11 @@ next-env.d.ts
 
 # données locales du backend (abonnement, paiements)
 backend/.data
+
+# secrets locaux (ne jamais committer)
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
